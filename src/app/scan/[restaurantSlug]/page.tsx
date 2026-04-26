@@ -126,7 +126,7 @@ export default function GuestScanPage() {
         .not("payment_status", "eq", "paid")
         .single();
 
-      let orderId;
+      let orderId: string;
 
       if (existingOrder) {
         orderId = existingOrder.id;

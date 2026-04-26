@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { 
   ChefHat, 
   Table2, 

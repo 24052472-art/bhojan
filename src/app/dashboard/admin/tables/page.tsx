@@ -173,36 +173,40 @@ export default function TableManagement() {
         {/* Tables Grid */}
         <div className="lg:col-span-2 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {tables.map((table) => (
-            <Card 
+            <div 
               key={table.id} 
-              className={`cursor-pointer group relative bg-slate-900/40 border-white/5 rounded-[40px] p-8 transition-all hover:border-primary/30 ${selectedTable?.id === table.id ? 'ring-2 ring-primary border-transparent' : ''}`}
+              className={`cursor-pointer group relative transition-all active:scale-[0.98] ${selectedTable?.id === table.id ? 'ring-2 ring-primary rounded-[40px]' : ''}`}
               onClick={() => setSelectedTable(table)}
             >
-              <div className="flex justify-between items-start mb-8">
-                <div className="w-16 h-16 rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center text-2xl font-black text-white">
-                  {table.table_number}
+              <Card 
+                className={`bg-slate-900/40 border-white/5 rounded-[40px] p-8 transition-all hover:border-primary/30 h-full`}
+              >
+                <div className="flex justify-between items-start mb-8">
+                  <div className="w-16 h-16 rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center text-2xl font-black text-white">
+                    {table.table_number}
+                  </div>
+                  <div className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusColor(table.status)}`}>
+                    {table.status}
+                  </div>
                 </div>
-                <div className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusColor(table.status)}`}>
-                  {table.status}
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 text-slate-500 font-bold text-xs uppercase tracking-widest">
+                    <User className="w-4 h-4 text-primary/50" />
+                    <span>{table.waiter_id ? "Assigned" : "Unassigned"}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-500 font-bold text-xs uppercase tracking-widest">
+                    <Users className="w-4 h-4 text-primary/50" />
+                    <span>{table.capacity} Guests</span>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 text-slate-500 font-bold text-xs uppercase tracking-widest">
-                  <User className="w-4 h-4 text-primary/50" />
-                  <span>{table.waiter_id ? "Assigned" : "Unassigned"}</span>
-                </div>
-                <div className="flex items-center gap-3 text-slate-500 font-bold text-xs uppercase tracking-widest">
-                  <Users className="w-4 h-4 text-primary/50" />
-                  <span>{table.capacity} Guests</span>
-                </div>
-              </div>
 
-              <div className="mt-8 flex gap-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                <Button variant="outline" className="flex-1 rounded-2xl border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest h-12">Assign</Button>
-                <Button variant="outline" className="w-12 h-12 rounded-2xl border-white/5 bg-white/5 flex items-center justify-center"><Settings2 className="w-4 h-4" /></Button>
-              </div>
-            </Card>
+                <div className="mt-8 flex gap-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                  <Button variant="outline" className="flex-1 rounded-2xl border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest h-12">Assign</Button>
+                  <Button variant="outline" className="w-12 h-12 rounded-2xl border-white/5 bg-white/5 flex items-center justify-center"><Settings2 className="w-4 h-4" /></Button>
+                </div>
+              </Card>
+            </div>
           ))}
           
           {tables.length === 0 && (

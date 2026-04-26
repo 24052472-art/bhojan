@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Search } from "lucide-center";
+import { Bell, Search, Settings, HelpCircle, Wifi } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { auth as firebaseAuth } from "@/lib/firebase/config";

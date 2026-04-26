@@ -19,7 +19,8 @@ import {
   ChevronRight,
   ArrowRight,
   Calendar,
-  UserCheck
+  UserCheck,
+  Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { auth as firebaseAuth } from "@/lib/firebase/config";
