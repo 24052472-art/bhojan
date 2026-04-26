@@ -98,6 +98,10 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
+    if (!restaurant.id) {
+      toast.error("Restaurant ID not found. Please refresh.");
+      return;
+    }
     setIsSaving(true);
     try {
       // Combine CGST and SGST into tax_percent for the database
