@@ -273,21 +273,95 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
         {notification && (
           <motion.div 
             key={notification.id}
-            initial={{ opacity: 0, scale: 0.5, y: -100 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.5, y: -100 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-none"
           >
             <div className={cn(
-              "p-12 rounded-[64px] border-4 flex flex-col items-center gap-6 shadow-[0_0_100px_rgba(0,0,0,0.5)]",
+              "p-16 rounded-[80px] border-8 flex flex-col items-center gap-8 shadow-[0_0_150px_rgba(0,0,0,0.8)]",
               notification.type === 'COOKED' ? 'bg-emerald-500 border-emerald-400' : 'bg-orange-500 border-orange-400'
             )}>
-              <div className="text-9xl animate-bounce">
+              <motion.div 
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 10, -10, 0]
+                }}
+                transition={{ repeat: Infinity, duration: 1 }}
+                className="text-[160px] leading-none"
+              >
                 {notification.type === 'COOKED' ? '🍳' : '🔥'}
-              </div>
-              <h2 className="text-6xl font-black italic uppercase tracking-tighter text-black leading-none">
-                {notification.type === 'COOKED' ? 'READY!' : 'COOKING!'}
+              </motion.div>
+              <h2 className="text-7xl font-black italic uppercase tracking-tighter text-black leading-none text-center">
+                {notification.type === 'COOKED' ? 'FOOD READY!' : 'COOKING!'}
               </h2>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Order Status Screen (Matches Screenshot) */}
+      <AnimatePresence>
+        {currentOrder && !showCheckout && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed inset-0 z-50 bg-[#020617] flex flex-col items-center justify-center p-10 text-center overflow-y-auto no-scrollbar"
+          >
+            <div className="absolute top-12 left-1/2 -translate-x-1/2">
+               <h1 className="text-2xl font-black italic tracking-tighter uppercase text-slate-700">{restaurant?.name}</h1>
+               <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mt-1">Self-Service Gateway</p>
+            </div>
+
+            <div className="space-y-12 w-full max-w-sm">
+               <div className="relative">
+                  <div className="w-32 h-32 rounded-full bg-emerald-500/10 border-4 border-emerald-500/20 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-16 h-16 text-emerald-500" />
+                  </div>
+                  <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full -z-10 animate-pulse" />
+               </div>
+
+               <div className="space-y-4">
+                  <h2 className="text-6xl font-black italic uppercase tracking-tighter text-white leading-tight">
+                    CHEF <span className="text-primary">NOTIFIED</span>
+                  </h2>
+                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest leading-relaxed">
+                    YOUR ORDER FOR STATION <span className="text-white">{params.tableId}</span> IS BEING PREPARED.
+                  </p>
+               </div>
+
+               <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] space-y-6">
+                  <div className="flex justify-between items-center">
+                     <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Order Status</p>
+                     <span className={cn(
+                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                       currentOrder.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' : 
+                       currentOrder.status === 'preparing' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 
+                       'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                     )}>
+                       {currentOrder.status}
+                     </span>
+                  </div>
+                  <div className="flex justify-between items-center border-t border-white/5 pt-6">
+                     <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Station</p>
+                     <p className="text-xl font-black text-white italic">{params.tableId}</p>
+                  </div>
+               </div>
+
+               <div className="space-y-4 pt-10">
+                  <Button 
+                    onClick={() => setCurrentOrder(null)}
+                    variant="outline" 
+                    className="w-full h-20 rounded-[32px] border-white/5 bg-white/5 text-white font-black uppercase italic tracking-tighter text-lg hover:bg-white/10 transition-all"
+                  >
+                    Add More Items
+                  </Button>
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest italic leading-none">Scan & Settle</p>
+                    <p className="text-[9px] font-black text-slate-900 uppercase tracking-widest leading-none">Skip the counter and pay now</p>
+                    <div className="w-full h-px bg-white/5 mt-4" />
+                  </div>
+               </div>
             </div>
           </motion.div>
         )}
@@ -323,29 +397,6 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
           </div>
         </div>
       </section>
-
-      {/* Current Order Tracker */}
-      {currentOrder && (
-        <section className="px-6 mb-8">
-          <div className="bg-primary/10 border border-primary/20 p-6 rounded-[32px] flex items-center justify-between shadow-2xl shadow-primary/5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center animate-pulse">
-                <ChefHat className="w-6 h-6 text-black" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-primary italic">Live Order Status</p>
-                <p className="text-xl font-black uppercase italic tracking-tighter text-white">
-                  {currentOrder.status === 'pending' ? 'Received' : currentOrder.status.toUpperCase()}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Station</p>
-              <p className="text-xl font-black text-white italic">{params.tableId}</p>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Categories */}
       <section className="px-6 mb-8 overflow-x-auto no-scrollbar flex gap-3">
