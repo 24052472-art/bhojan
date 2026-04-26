@@ -16,6 +16,14 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Bhojan - Restaurant Management Suite",
   description: "Premium multi-tenant restaurant management, POS, and QR ordering system.",
+  manifest: "/manifest.json",
+  themeColor: "#020617",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Bhojan Staff",
+  },
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
 };
 
 export default function RootLayout({

@@ -5,8 +5,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { auth as firebaseAuth } from "@/lib/firebase/config";
-import { onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { 
   Building2, 
@@ -18,14 +16,20 @@ import {
   Phone, 
   Percent,
   Info,
-  Loader2
+  Loader2,
+  Smartphone,
+  Download,
+  Apple,
+  Chrome
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("restaurant");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [restaurant, setRestaurant] = useState<any>({
+    id: "",
     name: "",
     slug: "",
     address: "",
@@ -47,36 +51,25 @@ export default function SettingsPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      if (user) {
-        fetchSettings(user.uid);
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("restaurant_id")
+        .eq("id", user.id)
+        .single();
+        
+      if (profile?.restaurant_id) {
+        fetchRestaurantData(profile.restaurant_id);
       } else {
         setIsLoading(false);
       }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const fetchSettings = async (uid: string) => {
-    try {
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("restaurant_id")
-        .eq("id", uid)
-        .single();
-        
-      if (profileError || !profile?.restaurant_id) {
-        const { data: allRestaurants } = await supabase.from("restaurants").select("id").limit(1);
-        if (allRestaurants?.[0]?.id) {
-           fetchRestaurantData(allRestaurants[0].id);
-        } else {
-           toast.error("No restaurant linked.");
-           setIsLoading(false);
-        }
-        return;
-      }
-      
-      fetchRestaurantData(profile.restaurant_id);
     } catch (err: any) {
       console.error(err);
       setIsLoading(false);
@@ -93,11 +86,10 @@ export default function SettingsPage() {
 
       if (error) throw error;
       if (data) {
-        const totalTax = data.tax_percent || 0;
         setRestaurant({
           ...data,
-          cgst_percent: totalTax / 2,
-          sgst_percent: totalTax / 2,
+          cgst_percent: (data.tax_percent || 5) / 2,
+          sgst_percent: (data.tax_percent || 5) / 2,
           bank_details: data.bank_details || {
             account_name: "",
             bank_name: "",
@@ -190,6 +182,7 @@ export default function SettingsPage() {
           { id: "restaurant", name: "Identity", icon: Building2 },
           { id: "billing", name: "Levies", icon: Percent },
           { id: "payments", name: "Channels", icon: CreditCard },
+          { id: "mobile", name: "Mobile", icon: Smartphone },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -476,6 +469,82 @@ export default function SettingsPage() {
                     />
                   </div>
                 ))}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "mobile" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+            <Card className="bg-[#0b1120] border-white/5 rounded-[40px] md:rounded-[56px] p-8 md:p-14 space-y-10">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+                  <Smartphone className="w-3 h-3" /> Quick Access
+                </div>
+                <CardTitle className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-white leading-none">Staff App <span className="text-slate-800">Deployment</span></CardTitle>
+                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-700 leading-relaxed italic">Direct link for Waiters and Kitchen units.</CardDescription>
+              </div>
+
+              <div className="flex flex-col items-center gap-8 py-4">
+                <div className="bg-white p-6 rounded-[48px] shadow-2xl shadow-primary/20 relative group">
+                  <QRCodeSVG 
+                    id="staff-qr"
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/login`} 
+                    size={200}
+                    level="H"
+                  />
+                  <div className="absolute inset-0 bg-primary/10 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center rounded-[48px]">
+                     <span className="text-[10px] font-black uppercase text-white tracking-[0.3em]">Staff Gateway</span>
+                  </div>
+                </div>
+                <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest italic text-center max-w-[200px]">
+                  Scan this on any smartphone to open the Staff Login.
+                </p>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-white/5">
+                 <div className="flex items-center gap-6 p-6 bg-white/[0.02] rounded-[32px] border border-white/5">
+                    <Download className="w-8 h-8 text-primary" />
+                    <div className="space-y-1">
+                       <p className="text-[10px] font-black text-white uppercase tracking-widest italic">PWA Protocol Enabled</p>
+                       <p className="text-[9px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Supports native-like installation on both iOS & Android.</p>
+                    </div>
+                 </div>
+              </div>
+            </Card>
+
+            <Card className="bg-[#0b1120] border-white/5 rounded-[40px] md:rounded-[56px] p-8 md:p-14 space-y-12">
+              <div className="space-y-2">
+                <CardTitle className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">Installation <span className="text-slate-800">Manual</span></CardTitle>
+                <CardDescription className="text-[10px] font-black uppercase tracking-widest text-slate-700 leading-relaxed">Turn this web suite into a native phone app.</CardDescription>
+              </div>
+
+              <div className="space-y-10">
+                <div className="space-y-6">
+                   <div className="flex items-center gap-4 text-white">
+                      <Apple className="w-6 h-6" />
+                      <p className="text-xs font-black uppercase tracking-widest italic">For iPhone / iPad (Safari)</p>
+                   </div>
+                   <ol className="space-y-4 ml-10 text-[10px] font-black text-slate-500 uppercase tracking-widest list-decimal">
+                      <li>Open Safari and scan the QR to the left.</li>
+                      <li>Tap the <span className="text-primary italic">"Share"</span> icon (square with arrow) at the bottom.</li>
+                      <li>Scroll down and tap <span className="text-white">"Add to Home Screen"</span>.</li>
+                      <li>The app will now appear on your home screen.</li>
+                   </ol>
+                </div>
+
+                <div className="space-y-6 border-t border-white/5 pt-10">
+                   <div className="flex items-center gap-4 text-white">
+                      <Chrome className="w-6 h-6" />
+                      <p className="text-xs font-black uppercase tracking-widest italic">For Android (Chrome)</p>
+                   </div>
+                   <ol className="space-y-4 ml-10 text-[10px] font-black text-slate-500 uppercase tracking-widest list-decimal">
+                      <li>Open Chrome and scan the QR to the left.</li>
+                      <li>Tap the <span className="text-primary italic">"Three Dots"</span> in the top right.</li>
+                      <li>Select <span className="text-white">"Install App"</span> or <span className="text-white">"Add to Home Screen"</span>.</li>
+                      <li>Click "Install" to confirm.</li>
+                   </ol>
+                </div>
               </div>
             </Card>
           </div>
