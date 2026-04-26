@@ -20,6 +20,10 @@ export default function DashboardLayout({
 
   useEffect(() => {
     async function determineRole() {
+      // 0. QUICK CACHE CHECK
+      const cachedRole = localStorage.getItem("bhojan_role");
+      if (cachedRole) setRole(cachedRole);
+
       // 1. PRIORITY: CHECK STAFF SESSION (FOR WAITERS/KITCHEN)
       const staffSessionStr = localStorage.getItem("staff_session");
       if (staffSessionStr) {
@@ -27,12 +31,13 @@ export default function DashboardLayout({
           const staff = JSON.parse(staffSessionStr);
           if (staff.role) {
             setRole(staff.role);
-            return; // Exit early if staff session is active
+            localStorage.setItem("bhojan_role", staff.role);
+            return;
           }
         } catch (e) {}
       }
 
-      // 2. FALLBACK: URL-BASED DETECTION (ELIMINATES FLASH)
+      // 2. FALLBACK: URL-BASED DETECTION
       if (pathname.startsWith('/dashboard/waiter')) {
         setRole("waiter");
         return;
@@ -41,24 +46,30 @@ export default function DashboardLayout({
         return;
       }
 
-      // 3. FINAL CHECK: FIREBASE AUTH (FOR OWNERS/SUPER ADMINS)
+      // 3. FINAL CHECK: FIREBASE AUTH
       const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
         if (fbUser) {
+          // Master Admin Fallback
+          if (fbUser.email === "aalokkushwaha285@gmail.com") {
+            setRole("owner");
+            localStorage.setItem("bhojan_role", "owner");
+            return;
+          }
+
           try {
-            const { data } = await supabase
+            const { data, error } = await supabase
               .from("profiles")
               .select("role")
               .eq("id", fbUser.uid)
               .single();
             
-            if (data?.role) setRole(data.role);
-            else if (fbUser.email?.toLowerCase() === "aalokkushwaha285@gmail.com") setRole("super_admin");
+            const detectedRole = data?.role || "owner";
+            setRole(detectedRole);
+            localStorage.setItem("bhojan_role", detectedRole);
           } catch (e) {
-            if (fbUser.email?.toLowerCase() === "aalokkushwaha285@gmail.com") setRole("super_admin");
+             setRole("owner");
+             localStorage.setItem("bhojan_role", "owner");
           }
-        } else {
-           // If no firebase and no staff session, we default to something or stay null
-           if (!role) setRole(null);
         }
       });
       return () => unsubscribe();
