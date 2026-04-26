@@ -17,7 +17,8 @@ import {
   Timer,
   History,
   User,
-  HistoryIcon
+  HistoryIcon,
+  Smartphone
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { auth as firebaseAuth } from "@/lib/firebase/config";
@@ -319,6 +320,27 @@ export default function KitchenDashboard() {
             </div>
           </div>
         )}
+      {/* PWA Install Promo */}
+      <div className="mt-20 p-10 rounded-[64px] bg-primary/5 border border-primary/10 space-y-8 max-w-2xl mx-auto mb-20">
+        <div className="flex items-center gap-6">
+           <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center">
+              <Smartphone className="w-8 h-8 text-primary" />
+           </div>
+           <div className="space-y-1">
+              <h3 className="text-xl font-black uppercase italic tracking-tighter text-white leading-none">Install Kitchen KDS</h3>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-700">Add to Home Screen for native experience</p>
+           </div>
+        </div>
+        <div className="grid grid-cols-2 gap-6">
+           <div className="p-6 rounded-[40px] bg-white/5 border border-white/5 space-y-3">
+              <p className="text-xs font-black text-white uppercase italic tracking-widest">Apple / Safari</p>
+              <p className="text-[10px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Share → Add to Home Screen</p>
+           </div>
+           <div className="p-6 rounded-[40px] bg-white/5 border border-white/5 space-y-3">
+              <p className="text-xs font-black text-white uppercase italic tracking-widest">Android / Chrome</p>
+              <p className="text-[10px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Menu → Install App</p>
+           </div>
+        </div>
       </div>
     </div>
   );

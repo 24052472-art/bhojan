@@ -274,26 +274,26 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
         {notification && (
           <motion.div 
             key={notification.id}
-            initial={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md pointer-events-none"
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xl pointer-events-none"
           >
             <div className={cn(
-              "p-16 rounded-[80px] border-8 flex flex-col items-center gap-8 shadow-[0_0_150px_rgba(0,0,0,0.8)]",
+              "p-20 rounded-[100px] border-8 flex flex-col items-center gap-10 shadow-[0_0_200px_rgba(0,0,0,1)]",
               notification.type === 'COOKED' ? 'bg-emerald-500 border-emerald-400' : 'bg-orange-500 border-orange-400'
             )}>
               <motion.div 
                 animate={{ 
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 10, -10, 0]
+                  scale: [1, 1.3, 1],
+                  rotate: [0, 15, -15, 0]
                 }}
-                transition={{ repeat: Infinity, duration: 1 }}
-                className="text-[160px] leading-none"
+                transition={{ repeat: Infinity, duration: 0.8 }}
+                className="text-[200px] leading-none"
               >
                 {notification.type === 'COOKED' ? '🍳' : '🔥'}
               </motion.div>
-              <h2 className="text-7xl font-black italic uppercase tracking-tighter text-black leading-none text-center">
+              <h2 className="text-8xl font-black italic uppercase tracking-tighter text-black leading-none text-center">
                 {notification.type === 'COOKED' ? 'FOOD READY!' : 'COOKING!'}
               </h2>
             </div>
