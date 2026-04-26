@@ -303,9 +303,10 @@ export default function LandingPage() {
              © 2026 Bhojan Cloud Infrastructure • All rights reserved.
            </p>
            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-800">
-             <a href="#" className="hover:text-white transition-colors">Privacy</a>
-             <a href="#" className="hover:text-white transition-colors">Terms</a>
-             <a href="#" className="hover:text-white transition-colors">Security</a>
+             <Link href="/about" className="hover:text-white transition-colors">About</Link>
+             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+             <Link href="/security" className="hover:text-white transition-colors">Security</Link>
            </div>
         </div>
       </footer>
