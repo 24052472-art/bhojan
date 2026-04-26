@@ -65,16 +65,31 @@ export default function SettingsPage() {
         .eq("id", uid)
         .single();
         
-      if (profileError) throw profileError;
-      if (!profile?.restaurant_id) {
-        toast.error("Restaurant ID not linked to your profile.");
+      if (profileError || !profile?.restaurant_id) {
+        // FALLBACK: If profile is not linked, just fetch the first restaurant
+        const { data: allRestaurants } = await supabase.from("restaurants").select("id").limit(1);
+        if (allRestaurants?.[0]?.id) {
+           fetchRestaurantData(allRestaurants[0].id);
+        } else {
+           toast.error("No restaurant found in system.");
+           setIsLoading(false);
+        }
         return;
       }
+      
+      fetchRestaurantData(profile.restaurant_id);
+    } catch (err: any) {
+      console.error(err);
+      setIsLoading(false);
+    }
+  };
 
+  const fetchRestaurantData = async (resId: string) => {
+    try {
       const { data, error } = await supabase
         .from("restaurants")
         .select("*")
-        .eq("id", profile.restaurant_id)
+        .eq("id", resId)
         .single();
 
       if (error) throw error;
@@ -93,8 +108,8 @@ export default function SettingsPage() {
           }
         });
       }
-    } catch (err: any) {
-      console.error(err);
+    } catch (e) {
+      toast.error("Failed to load restaurant details");
     } finally {
       setIsLoading(false);
     }
