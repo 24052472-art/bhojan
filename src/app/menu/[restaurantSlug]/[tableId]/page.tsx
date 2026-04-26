@@ -16,7 +16,8 @@ import {
   QrCode as QrIcon,
   Loader2,
   ChefHat,
-  Wifi
+  Wifi,
+  CheckCircle2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
