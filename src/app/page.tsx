@@ -45,12 +45,9 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#05070a] text-white selection:bg-primary/30 font-sans antialiased overflow-x-hidden">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 py-6 flex items-center justify-between pointer-events-none">
-        <div className="flex items-center gap-4 pointer-events-auto">
-          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-primary text-xl italic shadow-2xl backdrop-blur-3xl">
-            B
-          </div>
-          <span className="text-2xl font-black tracking-tighter uppercase italic hidden sm:block">Bhojan</span>
-        </div>
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/assets/logo.png" alt="Bhojan Logo" className="h-10 w-auto" />
+          </Link>
         
         <div className="flex items-center gap-3 pointer-events-auto">
           <Link href="/login" className="hidden sm:block px-6 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-colors">
@@ -293,11 +290,8 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-20 px-6 border-t border-white/[0.03]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
-           <div className="flex items-center gap-4 opacity-50">
-             <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-white text-lg italic">
-               B
-             </div>
-             <span className="text-lg font-black tracking-tighter uppercase italic">Bhojan</span>
+           <div className="flex items-center gap-4 opacity-70">
+             <img src="/assets/logo.png" alt="Bhojan Logo" className="h-8 w-auto grayscale brightness-200" />
            </div>
            <p className="text-[10px] font-black uppercase tracking-widest text-slate-800">
              © 2026 Bhojan Cloud Infrastructure • All rights reserved.

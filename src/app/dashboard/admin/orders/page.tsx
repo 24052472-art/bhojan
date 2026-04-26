@@ -29,6 +29,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { sendReceiptEmail } from "@/lib/actions/email";
+import { generateReceipt } from "@/lib/pdf/generateReceipt";
+import { Download } from "lucide-react";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -159,6 +161,24 @@ export default function AdminOrders() {
     } finally {
       setIsProcessingPayment(false);
     }
+  };
+
+  const handleDownloadReceipt = () => {
+    if (!selectedOrder) return;
+    const totals = calculateTotal(selectedOrder);
+    generateReceipt({
+      id: selectedOrder.id,
+      customer_name: selectedOrder.customer_name || "Guest",
+      customer_phone: selectedOrder.customer_phone || "",
+      table_number: selectedOrder.tables?.table_number || "N/A",
+      items: selectedOrder.order_items,
+      subtotal: totals.subtotal,
+      cgst: totals.cgst,
+      sgst: totals.sgst,
+      serviceCharge: totals.service,
+      total: totals.total
+    }, restaurant);
+    toast.success("Receipt Generated");
   };
 
   const handleDeleteOrder = async (orderId: string) => {
@@ -389,8 +409,11 @@ export default function AdminOrders() {
                   >
                     {isProcessingPayment ? <Loader2 className="w-6 h-6 animate-spin" /> : "Authorize Settlement"}
                   </Button>
-                  <button className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 group">
-                     <Printer className="w-4 h-4 group-hover:scale-110 transition-transform" /> Print Resource Receipt
+                  <button 
+                    onClick={handleDownloadReceipt}
+                    className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 group"
+                  >
+                     <Download className="w-4 h-4 group-hover:scale-110 transition-transform" /> Download Resource Receipt
                   </button>
                 </div>
               </div>
