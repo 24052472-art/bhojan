@@ -175,11 +175,29 @@ export default function TableManagement() {
     }
   };
 
-  if (isLoading && tables.length === 0) return (
-    <div className="flex justify-center py-40">
-       <Loader2 className="w-12 h-12 animate-spin text-primary" />
-    </div>
-  );
+  const downloadQRCode = (id: string, fileName: string) => {
+    const svg = document.getElementById(id);
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `${fileName}.png`;
+      downloadLink.href = `${pngFile}`;
+      downloadLink.click();
+      toast.success(`${fileName} Kit Ready!`);
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
 
   return (
     <div className="w-full space-y-6 md:space-y-10 pb-20">
@@ -205,6 +223,7 @@ export default function TableManagement() {
          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 relative z-10">
             <div className="bg-white p-4 rounded-[28px] md:rounded-[40px] shadow-2xl shadow-fuchsia-500/20 shrink-0">
                <QRCodeSVG 
+                  id="universal-qr"
                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/scan/${restaurant?.slug || restaurant?.id}`} 
                   size={140}
                   className="md:w-[160px] md:h-[160px]"
@@ -221,7 +240,10 @@ export default function TableManagement() {
                   All self-service orders appear with a <span className="text-fuchsia-500">special badge</span>.
                </p>
                <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
-                  <Button variant="outline" className="h-10 md:h-12 rounded-xl md:rounded-2xl border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white font-black uppercase text-[8px] md:text-[10px] tracking-widest gap-2">
+                  <Button 
+                    onClick={() => downloadQRCode('universal-qr', 'Universal_QR_Kit')}
+                    variant="outline" className="h-10 md:h-12 rounded-xl md:rounded-2xl border-fuchsia-500/30 text-fuchsia-400 hover:bg-fuchsia-500 hover:text-white font-black uppercase text-[8px] md:text-[10px] tracking-widest gap-2"
+                  >
                      <Download className="w-4 h-4" /> Download Kit
                   </Button>
                </div>
@@ -324,6 +346,7 @@ export default function TableManagement() {
                   <div className="flex flex-col items-center justify-center p-6 md:p-10 bg-white/5 rounded-[28px] md:rounded-[40px] border border-white/5 relative group/qr">
                     <div className="bg-white p-4 md:p-5 rounded-[24px] md:rounded-[32px] shadow-2xl transition-transform group-hover/qr:scale-105 duration-500">
                       <QRCodeSVG 
+                        id={`table-qr-${selectedTable.table_number}`}
                         value={`${window.location.origin}/menu/${restaurant?.slug}/${selectedTable.table_number}`} 
                         size={160}
                         className="md:w-[180px] md:h-[180px]"
@@ -334,7 +357,10 @@ export default function TableManagement() {
                     <p className="mt-4 md:mt-6 text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] text-center truncate w-full px-4">
                       Digital gateway Ready
                     </p>
-                    <Button variant="outline" className="mt-6 md:mt-8 gap-3 w-full h-12 md:h-14 rounded-xl md:rounded-2xl border-white/5 hover:bg-primary hover:text-white font-black uppercase text-[10px] tracking-widest">
+                    <Button 
+                      onClick={() => downloadQRCode(`table-qr-${selectedTable.table_number}`, `Table_${selectedTable.table_number}_QR`)}
+                      variant="outline" className="mt-6 md:mt-8 gap-3 w-full h-12 md:h-14 rounded-xl md:rounded-2xl border-white/5 hover:bg-primary hover:text-white font-black uppercase text-[10px] tracking-widest"
+                    >
                       <Download className="w-4 h-4 md:w-5 md:h-5" /> Download QR Kit
                     </Button>
                   </div>

@@ -125,7 +125,7 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
           localStorage.removeItem(`order_${params.restaurantSlug}_${params.tableId}`);
           setCurrentOrder(null);
         } else {
-          setCurrentOrder(prev => prev ? { ...prev, status: newStatus } : null);
+          setCurrentOrder((prev: any) => prev ? { ...prev, status: newStatus } : null);
         }
       })
       .subscribe((status) => {
