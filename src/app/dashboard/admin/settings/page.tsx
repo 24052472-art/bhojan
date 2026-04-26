@@ -20,7 +20,7 @@ import {
   Smartphone,
   Download,
   Apple,
-  Chrome
+  Globe
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -535,7 +535,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-6 border-t border-white/5 pt-10">
                    <div className="flex items-center gap-4 text-white">
-                      <Chrome className="w-6 h-6" />
+                      <Globe className="w-6 h-6" />
                       <p className="text-xs font-black uppercase tracking-widest italic">For Android (Chrome)</p>
                    </div>
                    <ol className="space-y-4 ml-10 text-[10px] font-black text-slate-500 uppercase tracking-widest list-decimal">
