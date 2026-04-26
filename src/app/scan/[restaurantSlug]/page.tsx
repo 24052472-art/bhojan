@@ -40,7 +40,27 @@ export default function GuestScanPage() {
 
   useEffect(() => {
     fetchInitialData();
+    // Hydrate from localStorage
+    const savedGuest = localStorage.getItem('bhojan_guest');
+    const savedCart = localStorage.getItem('bhojan_cart');
+    const savedTable = localStorage.getItem('bhojan_table');
+
+    if (savedGuest) setGuest(JSON.parse(savedGuest));
+    if (savedCart) setCart(JSON.parse(savedCart));
+    if (savedTable) {
+      const table = JSON.parse(savedTable);
+      setSelectedTable(table);
+      // If we have table and guest, jump to menu
+      if (savedGuest) setStep('menu');
+    }
   }, [restaurantSlug]);
+
+  // Sync to localStorage
+  useEffect(() => {
+    if (guest.name) localStorage.setItem('bhojan_guest', JSON.stringify(guest));
+    if (cart.length > 0) localStorage.setItem('bhojan_cart', JSON.stringify(cart));
+    if (selectedTable) localStorage.setItem('bhojan_table', JSON.stringify(selectedTable));
+  }, [guest, cart, selectedTable]);
 
   async function fetchInitialData() {
     setIsPageLoading(true);
@@ -177,6 +197,8 @@ export default function GuestScanPage() {
       }
 
       setStep('success');
+      setCart([]);
+      localStorage.removeItem('bhojan_cart');
       toast.success("Order Sent to Kitchen!");
     } catch (err: any) {
       toast.error(err.message);
@@ -273,11 +295,33 @@ export default function GuestScanPage() {
                    />
                 </div>
                 <Button 
-                  onClick={() => setStep('menu')} 
-                  disabled={!guest.name}
+                  onClick={async () => {
+                    setIsLoading(true);
+                    try {
+                      // Check for existing active order for this phone/table
+                      const { data: activeOrder } = await supabase
+                        .from("orders")
+                        .select("*")
+                        .eq("customer_phone", guest.phone)
+                        .eq("table_id", selectedTable.id)
+                        .not("status", "eq", "completed")
+                        .not("payment_status", "eq", "paid")
+                        .single();
+
+                      if (activeOrder) {
+                        toast.success(`Welcome back, ${guest.name}! Restoring your order.`);
+                      }
+                      setStep('menu');
+                    } catch (e) {
+                      setStep('menu');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }} 
+                  disabled={!guest.name || isLoading}
                   className="w-full h-16 rounded-3xl bg-primary text-black font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/10 mt-4 group"
                 >
-                  Browse Menu <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <>Browse Menu <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" /></>}
                 </Button>
                 <button onClick={() => setStep('table')} className="w-full text-center text-[8px] font-black uppercase tracking-widest text-slate-600 hover:text-white transition-colors">Wrong table? Go back</button>
              </div>
