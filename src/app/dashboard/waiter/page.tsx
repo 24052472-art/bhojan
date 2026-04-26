@@ -469,60 +469,61 @@ export default function WaiterDashboard() {
 
       <main className="flex-1 p-6 md:p-12 overflow-hidden flex flex-col relative">
         {activeTab === 'tables' && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4 md:gap-6 overflow-y-auto pr-2 custom-scrollbar no-scrollbar">
-            {tables.map((table) => {
-              const status = table.activeOrder?.status;
-              const isReady = status === 'ready';
-              const isOccupied = table.status === 'occupied';
-              return (
-                <button
-                  key={table.id}
-                  onClick={() => handleTableClick(table)}
-                  className={cn(
-                    "relative aspect-square rounded-[32px] md:rounded-[40px] border transition-all duration-500 flex flex-col items-center justify-center gap-2 group",
-                    isOccupied
-                      ? isReady
-                        ? 'border-emerald-500/40 bg-emerald-500/5 shadow-[0_0_30px_rgba(16,185,129,0.1)]'
-                        : 'border-orange-500/40 bg-orange-500/5 shadow-[0_0_30px_rgba(249,115,22,0.1)]'
-                      : 'border-white/5 bg-white/[0.01] hover:border-primary/40 hover:bg-primary/5 hover:scale-105'
-                  )}
-                >
-                  {isOccupied && (
-                    <div className="absolute top-4 right-4">
-                      {isReady ? <Bell className="w-5 h-5 text-emerald-500 animate-bounce" /> : <Flame className="w-5 h-5 text-orange-500 animate-pulse" />}
-                    </div>
-                  )}
-                  <span className={cn("text-3xl md:text-4xl font-black italic tracking-tighter transition-all duration-500", isOccupied ? 'text-white' : 'text-slate-800 group-hover:text-primary')}>{table.table_number}</span>
-                  <span className="text-[8px] font-black uppercase tracking-widest opacity-20 italic">{table.status}</span>
-                </button>
-              );
-            })}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4 md:gap-6 overflow-y-auto pr-2 custom-scrollbar no-scrollbar">
+              {tables.map((table) => {
+                const status = table.activeOrder?.status;
+                const isReady = status === 'ready';
+                const isOccupied = table.status === 'occupied';
+                return (
+                  <button
+                    key={table.id}
+                    onClick={() => handleTableClick(table)}
+                    className={cn(
+                      "relative aspect-square rounded-[32px] md:rounded-[40px] border transition-all duration-500 flex flex-col items-center justify-center gap-2 group",
+                      isOccupied
+                        ? isReady
+                          ? 'border-emerald-500/40 bg-emerald-500/5 shadow-[0_0_30px_rgba(16,185,129,0.1)]'
+                          : 'border-orange-500/40 bg-orange-500/5 shadow-[0_0_30px_rgba(249,115,22,0.1)]'
+                        : 'border-white/5 bg-white/[0.01] hover:border-primary/40 hover:bg-primary/5 hover:scale-105'
+                    )}
+                  >
+                    {isOccupied && (
+                      <div className="absolute top-4 right-4">
+                        {isReady ? <Bell className="w-5 h-5 text-emerald-500 animate-bounce" /> : <Flame className="w-5 h-5 text-orange-500 animate-pulse" />}
+                      </div>
+                    )}
+                    <span className={cn("text-3xl md:text-4xl font-black italic tracking-tighter transition-all duration-500", isOccupied ? 'text-white' : 'text-slate-800 group-hover:text-primary')}>{table.table_number}</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest opacity-20 italic">{table.status}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* PWA Install Promo */}
-          <div className="mt-12 p-8 rounded-[48px] bg-primary/5 border border-primary/10 space-y-6 shrink-0 max-w-xl">
-            <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Smartphone className="w-6 h-6 text-primary" />
-               </div>
-               <div className="space-y-1">
-                  <h3 className="text-sm font-black uppercase italic tracking-tighter text-white leading-none">Install Staff App</h3>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-700">Add to Home Screen for faster access</p>
-               </div>
+            {/* PWA Install Promo */}
+            <div className="mt-12 p-8 rounded-[48px] bg-primary/5 border border-primary/10 space-y-6 shrink-0 max-w-xl">
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Smartphone className="w-6 h-6 text-primary" />
+                 </div>
+                 <div className="space-y-1">
+                    <h3 className="text-sm font-black uppercase italic tracking-tighter text-white leading-none">Install Staff App</h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-700">Add to Home Screen for faster access</p>
+                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="p-4 rounded-[32px] bg-white/5 border border-white/5 space-y-2">
+                    <p className="text-[9px] font-black text-white uppercase italic tracking-widest">iPhone / iOS</p>
+                    <p className="text-[8px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Tap Share → Add to Home Screen</p>
+                 </div>
+                 <div className="p-4 rounded-[32px] bg-white/5 border border-white/5 space-y-2">
+                    <p className="text-[9px] font-black text-white uppercase italic tracking-widest">Android / Chrome</p>
+                    <p className="text-[8px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Tap Menu → Install App</p>
+                 </div>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="p-4 rounded-[32px] bg-white/5 border border-white/5 space-y-2">
-                  <p className="text-[9px] font-black text-white uppercase italic tracking-widest">iPhone / iOS</p>
-                  <p className="text-[8px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Tap Share → Add to Home Screen</p>
-               </div>
-               <div className="p-4 rounded-[32px] bg-white/5 border border-white/5 space-y-2">
-                  <p className="text-[9px] font-black text-white uppercase italic tracking-widest">Android / Chrome</p>
-                  <p className="text-[8px] text-slate-500 uppercase font-medium leading-relaxed tracking-widest">Tap Menu → Install App</p>
-               </div>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
 
       {activeTab === 'menu' && (
           <div className="flex flex-col lg:flex-row gap-6 md:gap-12 flex-1 overflow-hidden relative h-full">
