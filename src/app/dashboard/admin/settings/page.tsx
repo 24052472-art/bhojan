@@ -49,8 +49,6 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
       const { data: profile } = await supabase.from("user_profiles").select("restaurant_id").single();
       if (!profile?.restaurant_id) return;
 
@@ -77,6 +75,26 @@ export default function SettingsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'qr') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // For now, since we're in a managed environment, we'll use a FileReader to show the image 
+    // and ideally you'd upload to Supabase Storage. 
+    // To make it work IMMEDIATELY for you, I'll allow you to paste the URL 
+    // but I'll also add a 'Simulated Upload' toast to show it's ready for storage config.
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (type === 'logo') {
+        setRestaurant({ ...restaurant, logo_url: reader.result as string });
+      } else {
+        setRestaurant({ ...restaurant, merchant_qr_url: reader.result as string });
+      }
+      toast.success(`${type === 'logo' ? 'Logo' : 'QR Code'} prepared for saving!`);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSave = async () => {
@@ -163,20 +181,33 @@ export default function SettingsPage() {
             <CardContent className="px-0 space-y-10">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-10">
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Logo URL</label>
-                  <div className="w-32 h-32 rounded-3xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500 hover:border-primary/50 hover:bg-primary/5 transition-all relative overflow-hidden group">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Restaurant Logo</label>
+                  <input 
+                    type="file" 
+                    id="logo-upload" 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={(e) => handleImageUpload(e, 'logo')} 
+                  />
+                  <div 
+                    onClick={() => document.getElementById('logo-upload')?.click()}
+                    className="w-32 h-32 rounded-3xl bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500 hover:border-primary/50 hover:bg-primary/5 transition-all relative overflow-hidden group cursor-pointer"
+                  >
                     {restaurant.logo_url ? (
                       <img src={restaurant.logo_url} className="w-full h-full object-cover" />
                     ) : (
                       <Upload className="w-6 h-6" />
                     )}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                       <span className="text-[8px] font-black uppercase text-white">Change Logo</span>
+                    </div>
                   </div>
                   <input 
                     type="text" 
-                    placeholder="IMAGE URL"
+                    placeholder="OR PASTE LOGO URL"
                     value={restaurant.logo_url || ""} 
                     onChange={(e) => setRestaurant({...restaurant, logo_url: e.target.value})}
-                    className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary/30 transition-all" 
+                    className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-[8px] font-black uppercase tracking-widest outline-none focus:border-primary/30 transition-all" 
                   />
                 </div>
                 <div className="flex-1 w-full space-y-6">
@@ -325,19 +356,32 @@ export default function SettingsPage() {
             <Card className="bg-[#0b1120] border-white/5 rounded-[48px] p-8">
               <CardHeader className="px-0 pt-0 pb-10">
                 <CardTitle className="text-xl font-black uppercase italic tracking-tighter">Merchant QR Code</CardTitle>
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Upload your UPI/Payment QR code URL.</CardDescription>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Upload your UPI/Payment QR code image.</CardDescription>
               </CardHeader>
               <CardContent className="px-0 space-y-6">
-                <div className="w-full aspect-square max-w-[280px] mx-auto rounded-[48px] bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500 hover:border-primary/50 hover:bg-primary/5 transition-all relative overflow-hidden group">
+                <input 
+                  type="file" 
+                  id="qr-upload" 
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={(e) => handleImageUpload(e, 'qr')} 
+                />
+                <div 
+                  onClick={() => document.getElementById('qr-upload')?.click()}
+                  className="w-full aspect-square max-w-[280px] mx-auto rounded-[48px] bg-white/5 border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-slate-500 hover:border-primary/50 hover:bg-primary/5 transition-all relative overflow-hidden group cursor-pointer"
+                >
                   {restaurant.merchant_qr_url ? (
                     <img src={restaurant.merchant_qr_url} className="w-full h-full object-contain p-8" />
                   ) : (
                     <QrCode className="w-12 h-12" />
                   )}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                       <span className="text-[10px] font-black uppercase text-white">Change QR Code</span>
+                    </div>
                 </div>
                 <input 
                   type="text" 
-                  placeholder="MERCHANT QR URL"
+                  placeholder="OR PASTE MERCHANT QR URL"
                   value={restaurant.merchant_qr_url || ""} 
                   onChange={(e) => setRestaurant({...restaurant, merchant_qr_url: e.target.value})}
                   className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary/30 transition-all" 
