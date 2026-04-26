@@ -15,19 +15,17 @@ export default function DashboardLayout({
 }) {
   const [role, setRole] = useState<any>(null);
   const [isDeterminingRole, setIsDeterminingRole] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const supabase = createClient();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
-
     async function determineRole() {
-      // 0. QUICK CACHE CHECK
       const cachedRole = localStorage.getItem("bhojan_role");
       if (cachedRole && isMounted) setRole(cachedRole);
 
-      // 1. PRIORITY: CHECK STAFF SESSION (FOR WAITERS/KITCHEN)
       const staffSessionStr = localStorage.getItem("staff_session");
       if (staffSessionStr) {
         try {
@@ -43,7 +41,6 @@ export default function DashboardLayout({
         } catch (e) {}
       }
 
-      // 2. FALLBACK: URL-BASED DETECTION
       if (pathname.startsWith('/dashboard/waiter')) {
         if (isMounted) {
           setRole("waiter");
@@ -58,10 +55,8 @@ export default function DashboardLayout({
         return;
       }
 
-      // 3. FINAL CHECK: FIREBASE AUTH
       const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
         if (fbUser) {
-          // Master Admin Fallback
           if (fbUser.email === "abhi.kush047@gmail.com") {
             if (isMounted) {
               setRole("super_admin");
@@ -92,7 +87,6 @@ export default function DashboardLayout({
              }
           }
         } else {
-          // If no user and not a waiter/kitchen session, maybe redirect to login
           if (isMounted) setIsDeterminingRole(false);
         }
       });
@@ -101,11 +95,9 @@ export default function DashboardLayout({
         unsubscribe();
       };
     }
-
     determineRole();
   }, [supabase, pathname]);
 
-  // BOUNCE UNAUTHORIZED STAFF
   useEffect(() => {
     if (!isDeterminingRole && role === 'waiter') {
       const allowed = ['/dashboard/waiter', '/dashboard/admin/menu', '/dashboard/admin/orders'];
@@ -127,12 +119,20 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#020617] flex overflow-hidden">
-      {role && <Sidebar role={role} />}
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          <div className="max-w-[1600px] mx-auto animate-in fade-in duration-500">
+    <div className="min-h-screen bg-[#020617] flex relative overflow-x-hidden">
+      {role && (
+        <Sidebar 
+          role={role} 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+        />
+      )}
+      
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen relative">
+        <TopBar onMenuClick={() => setIsSidebarOpen(true)} />
+        
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-8 custom-scrollbar relative">
+          <div className="max-w-[1400px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out min-h-0 min-w-0">
             {children}
           </div>
         </main>

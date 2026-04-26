@@ -101,7 +101,7 @@ export default function StaffLoginPage() {
                </div>
             </div>
 
-            <Button disabled={isLoading} type="submit" className="w-full py-10 rounded-[32px] text-2xl font-black uppercase tracking-tighter bg-primary text-black shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all">
+            <Button disabled={isLoading} type="submit" className="w-full py-10 rounded-[32px] text-2xl font-black uppercase tracking-tighter bg-primary text-white shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all">
               {isLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : (
                 <>
                   Start Shift

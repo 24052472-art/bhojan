@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 import { 
   ChefHat, 
   Clock, 
@@ -112,111 +113,127 @@ export default function KitchenDashboard() {
 
   const updateStatus = async (orderId: string, newStatus: string) => {
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
-    if (error) toast.error("Update Failed");
+    if (error) toast.error("Transmission Error");
     else {
-      toast.success(newStatus === 'preparing' ? "Order is Cooking" : "Order is Ready");
+      toast.success(newStatus === 'preparing' ? "Production Initiated" : "Extraction Ready");
       if (profile?.restaurant_id) fetchLiveOrders(profile.restaurant_id);
     }
   };
 
   if (isLoading && orders.length === 0) return (
-    <div className="min-h-screen bg-[#020617] flex flex-col items-center justify-center">
-      <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Opening The Pass...</p>
+    <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+      <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      <p className="text-[10px] font-black text-slate-700 uppercase tracking-[0.3em]">Synchronizing Production Queue</p>
     </div>
   );
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto p-4 md:p-8 space-y-8">
+    <div className="w-full space-y-6 md:space-y-10 pb-20 relative">
       {/* Optimized Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-white/5 pb-6 gap-4">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none">
-            {view === 'active' ? 'Kitchen' : 'Order' } <span className="text-primary">{view === 'active' ? 'Feed' : 'History'}</span>
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between border-b border-white/[0.03] pb-8 gap-6">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black text-primary uppercase tracking-[0.3em]">
+            <ChefHat className="w-3 h-3" /> Station Control
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white italic uppercase tracking-tighter leading-none">
+            {view === 'active' ? 'Production' : 'History' } <span className="text-slate-500">{view === 'active' ? 'Matrix' : 'Log'}</span>
           </h1>
-          <div className="text-slate-500 text-[9px] font-black uppercase tracking-widest mt-2 flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${view === 'active' ? 'bg-emerald-500' : 'bg-slate-500'}`} /> 
-            {view === 'active' ? 'Live Production Stream' : 'Archive Data'}
+          <div className="text-slate-700 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 italic">
+            <div className={cn("w-2 h-2 rounded-full", view === 'active' ? 'bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-slate-700')} /> 
+            {view === 'active' ? 'Live Stream Protocol Active' : 'Accessing Archive Segments'}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-           <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+
+        <div className="flex items-center gap-4 w-full lg:w-auto overflow-x-auto no-scrollbar shrink-0">
+           <div className="flex bg-white/5 p-1.5 rounded-[20px] md:rounded-3xl border border-white/10 shadow-2xl shrink-0">
               {['active', 'completed'].map((v) => (
                 <button 
                   key={v}
                   onClick={() => setView(v as any)}
-                  className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${view === v ? 'bg-primary text-black' : 'text-slate-500 hover:text-white'}`}
+                  className={cn(
+                    "px-6 md:px-8 py-3 rounded-[15px] md:rounded-[20px] text-[10px] font-black uppercase tracking-widest transition-all shrink-0",
+                    view === v ? 'bg-primary text-black shadow-xl' : 'text-slate-600 hover:text-white'
+                  )}
                 >
                   {v}
                 </button>
               ))}
            </div>
-           <Button variant="outline" onClick={() => profile?.restaurant_id && fetchInitialData(profile.restaurant_id)} className="h-10 w-10 rounded-xl border-white/10 p-0">
-              <RefreshCcw className="w-4 h-4" />
+           <Button variant="outline" onClick={() => profile?.restaurant_id && fetchInitialData(profile.restaurant_id)} className="h-14 w-14 md:h-16 md:w-16 rounded-[20px] md:rounded-3xl border-white/10 shrink-0 hover:bg-white/5">
+              <RefreshCcw className="w-5 h-5 md:w-6 md:h-6" />
            </Button>
         </div>
       </div>
 
       {/* Grid with better break points */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 md:gap-8">
         {orders.map((order) => {
           const timeElapsed = Math.floor((new Date().getTime() - new Date(order.created_at).getTime()) / 60000);
           
           return (
-            <Card key={order.id} className={`bg-slate-900/60 border rounded-[32px] overflow-hidden transition-all shadow-xl ${order.status === 'preparing' ? 'border-orange-500/40' : 'border-white/5'}`}>
-               <div className="p-5 md:p-6 space-y-6">
+            <Card key={order.id} className={cn(
+              "bg-[#0b1120] border-2 rounded-[32px] md:rounded-[48px] overflow-hidden group transition-all duration-500 shadow-2xl relative",
+              order.status === 'preparing' ? 'border-orange-500/20' : 'border-white/[0.03]'
+            )}>
+               <div className="p-6 md:p-10 space-y-8">
                   {/* Compact Header */}
-                  <div className="flex items-center justify-between">
-                     <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-black italic shadow-lg ${order.status === 'preparing' ? 'bg-orange-500 text-black' : 'bg-white/5 text-white border border-white/10'}`}>
-                           <span className="text-[7px] opacity-60 leading-none">T</span>
-                           <span className="text-2xl leading-none">{order.tables?.table_number}</span>
+                  <div className="flex items-center justify-between gap-4">
+                     <div className="flex items-center gap-4 min-w-0">
+                        <div className={cn(
+                          "w-16 h-16 md:w-20 md:h-20 rounded-[24px] md:rounded-[32px] flex flex-col items-center justify-center font-black italic shadow-2xl shrink-0 transition-all duration-500",
+                          order.status === 'preparing' ? 'bg-orange-500 text-black scale-105' : 'bg-white/5 text-white border border-white/10'
+                        )}>
+                           <span className="text-[8px] md:text-[10px] opacity-40 leading-none mb-1">STATION</span>
+                           <span className="text-3xl md:text-4xl leading-none tracking-tighter">{order.tables?.table_number || '!!'}</span>
                         </div>
-                        <div className="min-w-0">
-                           <p className="text-base font-black text-white uppercase italic tracking-tighter truncate">{order.customer_name || "Guest"}</p>
-                           <div className="flex items-center gap-1.5 mt-0.5">
-                              <User className="w-2.5 h-2.5 text-primary" />
-                              <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest truncate">Server: {staffMap[order.waiter_id] || "Service"}</p>
+                        <div className="min-w-0 flex-1">
+                           <p className="text-xl md:text-2xl font-black text-white uppercase italic tracking-tighter truncate leading-none mb-1.5 group-hover:text-primary transition-colors">{order.customer_name || "GUEST ASSET"}</p>
+                           <div className="flex items-center gap-2">
+                              <User className="w-3 h-3 text-slate-700" />
+                              <p className="text-[9px] font-black text-slate-700 uppercase tracking-widest truncate italic">Server: {staffMap[order.waiter_id] || "Service Protocol"}</p>
                            </div>
                         </div>
                      </div>
-                     <div className={`px-3 py-2 rounded-xl flex items-center gap-1.5 ${timeElapsed > 15 && view === 'active' ? 'bg-red-500/10 text-red-500' : 'bg-white/5 text-slate-500'}`}>
-                        <Timer className="w-3.5 h-3.5" />
-                        <span className="font-black italic text-base leading-none">{timeElapsed}m</span>
+                     <div className={cn(
+                       "px-4 py-3 rounded-[20px] flex items-center gap-2 border shrink-0 transition-all duration-500",
+                       timeElapsed > 15 && view === 'active' ? 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-white/5 text-slate-600 border-white/10'
+                     )}>
+                        <Timer className={cn("w-4 h-4", timeElapsed > 15 && view === 'active' && 'animate-pulse')} />
+                        <span className="font-black italic text-xl leading-none tracking-tighter">{timeElapsed}m</span>
                      </div>
                   </div>
 
                   {/* List Items */}
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                      {order.order_items?.map((item: any) => (
-                       <div key={item.id} className="flex items-center gap-3 bg-white/[0.03] p-3 rounded-2xl border border-white/[0.05] group hover:bg-white/[0.05] transition-colors">
-                          <span className="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-black text-sm italic flex-shrink-0">{item.quantity}</span>
-                          <span className="text-white font-bold uppercase text-[13px] italic tracking-tight truncate leading-none">{item.menu_items?.name}</span>
+                       <div key={item.id} className="flex items-center gap-4 bg-white/[0.03] p-4 rounded-[24px] border border-white/[0.03] group/item hover:bg-white/[0.05] transition-all">
+                          <span className="w-10 h-10 rounded-[14px] bg-primary/10 text-primary flex items-center justify-center font-black text-lg italic shrink-0 border border-primary/20 shadow-lg group-hover/item:scale-110 transition-transform">{item.quantity}</span>
+                          <span className="text-white font-black uppercase text-sm md:text-base italic tracking-tight truncate leading-none flex-1">{item.menu_items?.name}</span>
                        </div>
                      ))}
                   </div>
 
                   {/* Action Row */}
-                  <div className="pt-2">
+                  <div className="pt-4">
                     {view === 'active' ? (
                       order.status === 'pending' ? (
                         <Button 
                           onClick={() => updateStatus(order.id, 'preparing')}
-                          className="w-full py-6 rounded-2xl bg-orange-500 text-black font-black uppercase tracking-widest text-[10px] hover:bg-orange-600 shadow-lg shadow-orange-500/10 active:scale-95 transition-all"
+                          className="w-full py-8 md:py-10 rounded-[28px] md:rounded-[32px] bg-orange-500 text-black font-black uppercase tracking-widest text-[10px] hover:bg-orange-600 shadow-2xl shadow-orange-500/20 active:scale-95 transition-all gap-2"
                         >
-                          <Flame className="w-4 h-4 mr-2" /> Start Cooking
+                          <Flame className="w-5 h-5" /> Initiate Production
                         </Button>
                       ) : (
                         <Button 
                           onClick={() => updateStatus(order.id, 'ready')}
-                          className="w-full py-6 rounded-2xl bg-emerald-500 text-black font-black uppercase tracking-widest text-[10px] hover:bg-emerald-600 shadow-lg shadow-emerald-500/10 active:scale-95 transition-all"
+                          className="w-full py-8 md:py-10 rounded-[28px] md:rounded-[32px] bg-emerald-500 text-black font-black uppercase tracking-widest text-[10px] hover:bg-emerald-600 shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all gap-2"
                         >
-                          <CheckCircle2 className="w-4 h-4 mr-2" /> Mark Ready
+                          <CheckCircle2 className="w-5 h-5" /> Execute Extraction
                         </Button>
                       )
                     ) : (
-                      <div className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-center">
-                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Status: {order.status.toUpperCase()}</span>
+                      <div className="w-full py-6 rounded-[28px] md:rounded-[32px] bg-white/[0.02] border border-white/5 text-center">
+                         <span className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em] italic">Sequence: {order.status.toUpperCase()}</span>
                       </div>
                     )}
                   </div>
@@ -226,9 +243,14 @@ export default function KitchenDashboard() {
         })}
 
         {orders.length === 0 && (
-          <div className="col-span-full py-40 text-center opacity-10">
-             <HistoryIcon className="w-24 h-24 mx-auto text-slate-500 mb-6" />
-             <p className="text-2xl font-black text-white uppercase tracking-tighter italic">Queue is Empty</p>
+          <div className="col-span-full py-40 text-center space-y-6">
+             <div className="w-24 h-24 bg-white/5 rounded-[40px] flex items-center justify-center mx-auto border border-white/5 animate-pulse">
+                <HistoryIcon className="w-12 h-12 text-slate-800" />
+             </div>
+             <div className="space-y-2">
+                <p className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter italic leading-none">Production Queue Empty</p>
+                <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em]">No active sequences detected in this sector.</p>
+             </div>
           </div>
         )}
       </div>

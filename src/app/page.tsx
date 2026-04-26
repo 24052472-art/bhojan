@@ -19,7 +19,7 @@ import { motion } from "framer-motion";
 const LandingButton = ({ children, variant = "primary", className = "" }: any) => (
   <button className={`px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 flex items-center gap-2 ${
     variant === "primary" 
-      ? "bg-primary text-slate-950 shadow-[0_20px_40px_rgba(0,212,255,0.3)] hover:shadow-[0_25px_50px_rgba(0,212,255,0.4)]" 
+      ? "bg-primary text-white shadow-[0_20px_40px_rgba(0,212,255,0.3)] hover:shadow-[0_25px_50px_rgba(0,212,255,0.4)]" 
       : "bg-white/5 text-white border border-white/10 hover:bg-white/10"
   } ${className}`}>
     {children}

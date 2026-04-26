@@ -142,7 +142,7 @@ export default function SignupPage() {
 
               <div className="flex gap-4">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1 py-10 rounded-[32px] font-black uppercase border-white/5">Back</Button>
-                <Button type="submit" disabled={isLoading} className="flex-[2] py-10 rounded-[32px] text-xl font-black uppercase bg-accent text-black">
+                <Button type="submit" disabled={isLoading} className="flex-[2] py-10 rounded-[32px] text-xl font-black uppercase bg-accent text-white">
                   {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Launch"}
                 </Button>
               </div>

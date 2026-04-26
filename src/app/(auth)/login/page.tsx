@@ -118,7 +118,7 @@ export default function LoginPage() {
                
                <Button 
                  onClick={handleEnter}
-                 className="w-full py-10 rounded-[32px] text-2xl font-black uppercase tracking-tighter bg-primary text-black hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-3"
+                 className="w-full py-10 rounded-[32px] text-2xl font-black uppercase tracking-tighter bg-primary text-white hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-3"
                >
                  {isLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : <><LayoutDashboard className="w-8 h-8" /> ENTER SUITE</>}
                </Button>
@@ -143,7 +143,7 @@ export default function LoginPage() {
                      value={email} 
                      onChange={(e) => setEmail(e.target.value)}
                      placeholder="OWNER EMAIL" 
-                     className="w-full bg-white/5 border border-white/5 rounded-3xl pl-16 pr-8 py-5 outline-none focus:border-primary/50 text-white font-bold transition-all placeholder:text-slate-700 uppercase text-xs tracking-widest" 
+                     className="w-full bg-white/5 border border-white/5 rounded-3xl pl-16 pr-8 py-5 outline-none focus:border-primary/50 text-white font-bold transition-all placeholder:text-slate-700 text-xs tracking-widest" 
                    />
                  </div>
                  
@@ -157,7 +157,7 @@ export default function LoginPage() {
                      value={password} 
                      onChange={(e) => setPassword(e.target.value)}
                      placeholder="ACCESS KEY" 
-                     className="w-full bg-white/5 border border-white/5 rounded-3xl pl-16 pr-8 py-5 outline-none focus:border-primary/50 text-white font-bold transition-all placeholder:text-slate-700 uppercase text-xs tracking-widest" 
+                     className="w-full bg-white/5 border border-white/5 rounded-3xl pl-16 pr-8 py-5 outline-none focus:border-primary/50 text-white font-bold transition-all placeholder:text-slate-700 text-xs tracking-widest" 
                    />
                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors">
                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -165,7 +165,7 @@ export default function LoginPage() {
                  </div>
               </div>
 
-              <Button disabled={isLoading} type="submit" className="w-full py-10 rounded-[32px] text-2xl font-black uppercase tracking-tighter bg-primary text-black shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all">
+              <Button disabled={isLoading} type="submit" className="w-full py-10 rounded-[32px] text-2xl font-black uppercase tracking-tighter bg-primary text-white shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all">
                 {isLoading ? <Loader2 className="w-8 h-8 animate-spin" /> : (
                   <>
                     Verify & Launch
