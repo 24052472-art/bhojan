@@ -58,12 +58,15 @@ export default function SignupPage() {
 
         if (resError) throw new Error(`Restaurant Creation Failed: ${resError.message}`);
 
-        await supabase.from("profiles").upsert({ 
+        const { error: profileError } = await supabase.from("profiles").upsert({ 
           id: user.uid,
           restaurant_id: resData.id,
           role: 'owner',
-          full_name: formData.fullName
+          full_name: formData.fullName,
+          email: formData.email // Ensure email is saved for self-healing login
         });
+
+        if (profileError) throw new Error(`Profile Sync Failed: ${profileError.message}`);
 
         toast.success("Welcome Aboard!");
         setStep(3);

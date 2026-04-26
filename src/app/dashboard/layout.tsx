@@ -14,15 +14,18 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [role, setRole] = useState<any>(null);
+  const [isDeterminingRole, setIsDeterminingRole] = useState(true);
   const supabase = createClient();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
+    let isMounted = true;
+
     async function determineRole() {
       // 0. QUICK CACHE CHECK
       const cachedRole = localStorage.getItem("bhojan_role");
-      if (cachedRole) setRole(cachedRole);
+      if (cachedRole && isMounted) setRole(cachedRole);
 
       // 1. PRIORITY: CHECK STAFF SESSION (FOR WAITERS/KITCHEN)
       const staffSessionStr = localStorage.getItem("staff_session");
@@ -30,8 +33,11 @@ export default function DashboardLayout({
         try {
           const staff = JSON.parse(staffSessionStr);
           if (staff.role) {
-            setRole(staff.role);
-            localStorage.setItem("bhojan_role", staff.role);
+            if (isMounted) {
+              setRole(staff.role);
+              localStorage.setItem("bhojan_role", staff.role);
+              setIsDeterminingRole(false);
+            }
             return;
           }
         } catch (e) {}
@@ -39,10 +45,16 @@ export default function DashboardLayout({
 
       // 2. FALLBACK: URL-BASED DETECTION
       if (pathname.startsWith('/dashboard/waiter')) {
-        setRole("waiter");
+        if (isMounted) {
+          setRole("waiter");
+          setIsDeterminingRole(false);
+        }
         return;
       } else if (pathname.startsWith('/dashboard/kitchen')) {
-        setRole("kitchen");
+        if (isMounted) {
+          setRole("kitchen");
+          setIsDeterminingRole(false);
+        }
         return;
       }
 
@@ -51,8 +63,11 @@ export default function DashboardLayout({
         if (fbUser) {
           // Master Admin Fallback
           if (fbUser.email === "aalokkushwaha285@gmail.com") {
-            setRole("owner");
-            localStorage.setItem("bhojan_role", "owner");
+            if (isMounted) {
+              setRole("owner");
+              localStorage.setItem("bhojan_role", "owner");
+              setIsDeterminingRole(false);
+            }
             return;
           }
 
@@ -64,15 +79,27 @@ export default function DashboardLayout({
               .single();
             
             const detectedRole = data?.role || "owner";
-            setRole(detectedRole);
-            localStorage.setItem("bhojan_role", detectedRole);
+            if (isMounted) {
+              setRole(detectedRole);
+              localStorage.setItem("bhojan_role", detectedRole);
+              setIsDeterminingRole(false);
+            }
           } catch (e) {
-             setRole("owner");
-             localStorage.setItem("bhojan_role", "owner");
+             if (isMounted) {
+               setRole("owner");
+               localStorage.setItem("bhojan_role", "owner");
+               setIsDeterminingRole(false);
+             }
           }
+        } else {
+          // If no user and not a waiter/kitchen session, maybe redirect to login
+          if (isMounted) setIsDeterminingRole(false);
         }
       });
-      return () => unsubscribe();
+      return () => {
+        isMounted = false;
+        unsubscribe();
+      };
     }
 
     determineRole();
@@ -80,13 +107,24 @@ export default function DashboardLayout({
 
   // BOUNCE UNAUTHORIZED STAFF
   useEffect(() => {
-    if (role === 'waiter') {
+    if (!isDeterminingRole && role === 'waiter') {
       const allowed = ['/dashboard/waiter', '/dashboard/admin/menu', '/dashboard/admin/orders'];
       if (!allowed.some(p => pathname.startsWith(p))) {
         router.replace('/dashboard/waiter');
       }
     }
-  }, [role, pathname, router]);
+  }, [role, pathname, router, isDeterminingRole]);
+
+  if (isDeterminingRole) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-primary font-black uppercase tracking-[0.3em] text-xs animate-pulse">Initializing Suite</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#020617] flex overflow-hidden">

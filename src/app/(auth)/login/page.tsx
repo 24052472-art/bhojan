@@ -50,21 +50,27 @@ export default function LoginPage() {
 
       // 2. SELF-HEALING: If ID fails, search by EMAIL (The common link)
       if (error || !profile) {
+        console.warn("ID lookup failed, trying email lookup...");
         const { data: emailProfile, error: emailError } = await supabase
           .from("profiles")
           .select("*")
           .eq("email", user.email)
           .single();
 
-        if (emailError || !emailProfile) throw new Error("Profile not found in database.");
+        if (emailError || !emailProfile) {
+          console.error("Login Error: Profile not found for", user.email);
+          throw new Error(`Profile not found in database. Please ensure you have signed up at /signup first.`);
+        }
         
         profile = emailProfile;
         
         // 3. AUTO-LINK: Save the Firebase UID into Supabase for future fast-track login
-        await supabase
+        const { error: updateError } = await supabase
           .from("profiles")
           .update({ id: user.uid })
           .eq("email", user.email);
+        
+        if (updateError) console.error("Auto-link failed:", updateError.message);
       }
 
       let target = "/dashboard/admin";

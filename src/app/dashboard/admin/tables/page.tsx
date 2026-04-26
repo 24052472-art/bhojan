@@ -49,23 +49,48 @@ export default function TableManagement() {
 
   async function fetchInitialData(uid: string) {
     setIsLoading(true);
-    // 1. Get Profile & Restaurant
-    const { data: profile } = await supabase.from("profiles").select("*, restaurants(*)").eq("id", uid).single();
-    if (profile?.restaurants) {
-      setRestaurant(profile.restaurants);
-      fetchTables(profile.restaurants.id);
-      fetchStaff(profile.restaurants.id);
+    try {
+      // 1. Get Profile & Restaurant
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("*, restaurants(*)")
+        .eq("id", uid)
+        .single();
+      
+      if (error) throw error;
+
+      if (profile?.restaurants) {
+        setRestaurant(profile.restaurants);
+        await Promise.all([
+          fetchTables(profile.restaurants.id),
+          fetchStaff(profile.restaurants.id)
+        ]);
+      } else {
+        toast.error("No restaurant found for this account.");
+        setIsLoading(false);
+      }
+    } catch (err: any) {
+      console.error("Initial data fetch error:", err);
+      toast.error("Failed to load environment. Check database permissions.");
+      setIsLoading(false);
     }
   }
 
   const fetchTables = async (resId: string) => {
-    const { data } = await supabase
-      .from("tables")
-      .select("*, profiles!assigned_waiter_id(full_name)")
-      .eq("restaurant_id", resId)
-      .order("table_number", { ascending: true });
-    setTables(data || []);
-    setIsLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("tables")
+        .select("*, profiles!assigned_waiter_id(full_name)")
+        .eq("restaurant_id", resId)
+        .order("table_number", { ascending: true });
+      
+      if (error) throw error;
+      setTables(data || []);
+    } catch (err: any) {
+      toast.error("Failed to load tables. Check RLS policies.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResetStatus = async (tableId: string) => {

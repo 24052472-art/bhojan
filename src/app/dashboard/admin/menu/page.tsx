@@ -47,11 +47,29 @@ export default function MenuManagement() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
-        const { data: profile } = await supabase.from("profiles").select("restaurant_id").eq("id", user.uid).single();
-        if (profile?.restaurant_id) {
-          setRestaurantId(profile.restaurant_id);
-          fetchItems(profile.restaurant_id);
+        try {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("restaurant_id")
+            .eq("id", user.uid)
+            .single();
+
+          if (error) throw error;
+
+          if (profile?.restaurant_id) {
+            setRestaurantId(profile.restaurant_id);
+            fetchItems(profile.restaurant_id);
+          } else {
+            setIsFetching(false);
+            toast.error("Restaurant not linked to this account.");
+          }
+        } catch (err: any) {
+          console.error("Profile fetch error:", err);
+          setIsFetching(false);
+          toast.error("Could not load profile. Check database permissions.");
         }
+      } else {
+        setIsFetching(false);
       }
     });
     return () => unsubscribe();
@@ -59,14 +77,20 @@ export default function MenuManagement() {
 
   async function fetchItems(resId: string) {
     setIsFetching(true);
-    const { data } = await supabase
-      .from("menu_items")
-      .select("*")
-      .eq("restaurant_id", resId)
-      .order("created_at", { ascending: false });
-    
-    if (data) setItems(data);
-    setIsFetching(false);
+    try {
+      const { data, error } = await supabase
+        .from("menu_items")
+        .select("*")
+        .eq("restaurant_id", resId)
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      if (data) setItems(data);
+    } catch (err: any) {
+      toast.error("Failed to load menu items. Check RLS policies.");
+    } finally {
+      setIsFetching(false);
+    }
   }
 
   const categories = useMemo(() => {

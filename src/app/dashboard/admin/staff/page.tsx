@@ -43,16 +43,29 @@ export default function StaffManagement() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.uid)
-          .single();
-        
-        setAdminProfile(profile);
-        if (profile?.restaurant_id) {
-          fetchStaff(profile.restaurant_id);
+        try {
+          const { data: profile, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.uid)
+            .single();
+          
+          if (error) throw error;
+          
+          setAdminProfile(profile);
+          if (profile?.restaurant_id) {
+            fetchStaff(profile.restaurant_id);
+          } else {
+            setIsLoading(false);
+            toast.error("Restaurant not linked to this account.");
+          }
+        } catch (err: any) {
+          console.error("Staff page profile fetch error:", err);
+          setIsLoading(false);
+          toast.error("Failed to load profile. Check RLS policies.");
         }
+      } else {
+        setIsLoading(false);
       }
     });
     return () => unsubscribe();
@@ -60,15 +73,21 @@ export default function StaffManagement() {
 
   async function fetchStaff(restaurantId: string) {
     setIsLoading(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("restaurant_id", restaurantId)
-      .neq("role", "owner")
-      .neq("role", "super_admin");
-    
-    setStaff(data || []);
-    setIsLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("restaurant_id", restaurantId)
+        .neq("role", "owner")
+        .neq("role", "super_admin");
+      
+      if (error) throw error;
+      setStaff(data || []);
+    } catch (err: any) {
+      toast.error("Failed to load staff registry. Check RLS policies.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleCopyLink = () => {
