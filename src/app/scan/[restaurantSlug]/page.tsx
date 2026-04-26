@@ -17,7 +17,8 @@ import {
   ArrowRight,
   Loader2,
   Trash2,
-  MapPin
+  MapPin,
+  QrCode
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { toast } from "react-hot-toast";
@@ -221,10 +222,16 @@ export default function GuestScanPage() {
     <div className="min-h-screen bg-[#05070a] text-white font-sans overflow-x-hidden selection:bg-primary/30">
       {/* Header */}
       <header className="px-6 py-8 flex flex-col items-center text-center space-y-2 border-b border-white/5 sticky top-0 bg-[#05070a]/80 backdrop-blur-3xl z-50">
-         <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mb-2 shadow-lg shadow-primary/20 animate-pulse">
-            <UtensilsCrossed className="w-6 h-6 text-black" />
-         </div>
-         <h1 className="text-xl font-black uppercase italic tracking-tighter">{restaurant?.name || 'BHOJAN'}</h1>
+         {restaurant?.logo_url ? (
+            <div className="w-16 h-16 rounded-2xl overflow-hidden mb-2 shadow-lg shadow-primary/10 border border-white/10">
+               <img src={restaurant.logo_url} className="w-full h-full object-cover" alt="Logo" />
+            </div>
+         ) : (
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center mb-2 shadow-lg shadow-primary/20 animate-pulse">
+               <UtensilsCrossed className="w-6 h-6 text-black" />
+            </div>
+         )}
+         <h1 className="text-xl font-black uppercase italic tracking-tighter text-white">{restaurant?.name || 'BHOJAN'}</h1>
          <p className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-500">Self-Service Gateway</p>
       </header>
 
@@ -335,7 +342,7 @@ export default function GuestScanPage() {
                    <h2 className="text-2xl font-black italic uppercase tracking-tighter leading-none">Our <span className="text-primary">Flavors</span></h2>
                    <p className="text-[7px] font-bold text-slate-500 uppercase tracking-widest mt-1">Ordering for Station {selectedTable.table_number}</p>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5">
                    <Search className="w-4 h-4 text-slate-500" />
                 </div>
              </div>
@@ -444,20 +451,63 @@ export default function GuestScanPage() {
         )}
 
         {step === 'success' && (
-          <div className="min-h-[60vh] flex flex-col items-center justify-center text-center space-y-8 animate-in fade-in zoom-in duration-700">
-             <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center relative">
+          <div className="min-h-[80vh] flex flex-col items-center justify-start text-center space-y-10 animate-in fade-in zoom-in duration-700 pb-20">
+             <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center relative mt-10">
                 <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
                 <CheckCircle2 className="w-12 h-12 text-emerald-500" />
              </div>
-             <div>
+             
+             <div className="space-y-4">
                 <h2 className="text-4xl font-black italic uppercase tracking-tighter leading-none">Chef <span className="text-primary">Notified</span></h2>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-4 max-w-[250px] mx-auto leading-relaxed">
-                   Your order for Station {selectedTable.table_number} is being prepared with love.
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest max-w-[250px] mx-auto leading-relaxed">
+                   Your order for Station {selectedTable.table_number} is being prepared.
                 </p>
              </div>
+
+             {/* Digital Payment Portal */}
+             <div className="w-full bg-white/[0.03] border border-white/5 rounded-[48px] p-10 space-y-8">
+                <div className="text-center">
+                   <h3 className="text-lg font-black uppercase italic tracking-tighter">Scan & <span className="text-primary">Settle</span></h3>
+                   <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 mt-2">Skip the counter and pay now</p>
+                </div>
+
+                <div className="w-full aspect-square max-w-[200px] mx-auto bg-white rounded-3xl p-6 shadow-2xl shadow-primary/5">
+                   {restaurant?.merchant_qr_url ? (
+                      <img src={restaurant.merchant_qr_url} className="w-full h-full object-contain" alt="Payment QR" />
+                   ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-100 rounded-xl">
+                         <QrCode className="w-10 h-10 text-slate-300" />
+                      </div>
+                   )}
+                </div>
+
+                {restaurant?.bank_details?.bank_name && (
+                   <div className="space-y-4 pt-4 border-t border-white/5">
+                      <p className="text-[8px] font-black uppercase tracking-[0.3em] text-primary">Bank Transfer</p>
+                      <div className="grid grid-cols-1 gap-3 text-left">
+                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">Bank</span>
+                            <span className="text-white italic">{restaurant.bank_details.bank_name}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">A/C No</span>
+                            <span className="text-white italic">{restaurant.bank_details.account_number}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">IFSC</span>
+                            <span className="text-white italic">{restaurant.bank_details.ifsc}</span>
+                         </div>
+                      </div>
+                   </div>
+                )}
+             </div>
+
              <div className="pt-4 w-full max-w-[200px] space-y-3">
                 <Button onClick={() => setStep('menu')} className="w-full h-14 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest text-[8px] hover:bg-white/10">Order More</Button>
-                <button className="w-full text-center text-[8px] font-black uppercase tracking-widest text-slate-600 hover:text-white transition-colors">Need a waiter? Tap here</button>
+                <div className="text-[8px] font-black uppercase tracking-widest text-slate-600 mt-4 leading-relaxed">
+                   {restaurant?.address} <br/>
+                   Ph: {restaurant?.phone}
+                </div>
              </div>
           </div>
         )}
