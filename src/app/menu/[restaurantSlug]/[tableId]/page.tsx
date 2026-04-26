@@ -308,60 +308,58 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="fixed inset-0 z-50 bg-[#020617] flex flex-col items-center justify-center p-10 text-center overflow-y-auto no-scrollbar"
+            className="fixed inset-0 z-50 bg-[#F3F4F6] flex flex-col items-center justify-center p-10 text-center overflow-y-auto no-scrollbar"
           >
             <div className="absolute top-12 left-1/2 -translate-x-1/2">
-               <h1 className="text-2xl font-black italic tracking-tighter uppercase text-slate-700">{restaurant?.name}</h1>
-               <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest mt-1">Self-Service Gateway</p>
+               <h1 className="text-xl font-black italic tracking-tighter uppercase text-gray-400">{restaurant?.name}</h1>
+               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Order Confirmed</p>
             </div>
 
             <div className="space-y-12 w-full max-w-sm">
                <div className="relative">
-                  <div className="w-32 h-32 rounded-full bg-emerald-500/10 border-4 border-emerald-500/20 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-16 h-16 text-emerald-500" />
+                  <div className="w-32 h-32 rounded-full bg-emerald-50 flex items-center justify-center mx-auto border-4 border-white shadow-xl">
+                    <CheckCircle2 className="w-16 h-16 text-[#16A34A]" />
                   </div>
-                  <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full -z-10 animate-pulse" />
+                  <div className="absolute inset-0 bg-emerald-100 blur-3xl rounded-full -z-10 animate-pulse" />
                </div>
 
                <div className="space-y-4">
-                  <h2 className="text-6xl font-black italic uppercase tracking-tighter text-white leading-tight">
-                    CHEF <span className="text-primary">NOTIFIED</span>
+                  <h2 className="text-5xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight">
+                    CHEF <span className="text-[#16A34A]">NOTIFIED</span>
                   </h2>
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest leading-relaxed">
-                    YOUR ORDER FOR STATION <span className="text-white">{params.tableId}</span> IS BEING PREPARED.
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                    YOUR ORDER FOR TABLE <span className="text-gray-900">{params.tableId}</span> IS BEING PREPARED.
                   </p>
                </div>
 
-               <div className="bg-white/5 border border-white/10 p-8 rounded-[40px] space-y-6">
+               <div className="bg-white border border-gray-100 p-8 rounded-[40px] shadow-sm space-y-6">
                   <div className="flex justify-between items-center">
-                     <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Order Status</p>
+                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Order Status</p>
                      <span className={cn(
                        "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                       currentOrder.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' : 
-                       currentOrder.status === 'preparing' ? 'bg-orange-500/10 text-orange-500 border-orange-500/20' : 
-                       'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                       currentOrder.status === 'pending' ? 'bg-orange-50 text-white border-orange-100' : 
+                       currentOrder.status === 'preparing' ? 'bg-blue-500 text-white border-blue-100' : 
+                       'bg-[#16A34A] text-white border-green-100'
                      )}>
                        {currentOrder.status}
                      </span>
                   </div>
-                  <div className="flex justify-between items-center border-t border-white/5 pt-6">
-                     <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Station</p>
-                     <p className="text-xl font-black text-white italic">{params.tableId}</p>
+                  <div className="flex justify-between items-center border-t border-gray-50 pt-6">
+                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Station</p>
+                     <p className="text-xl font-extrabold text-gray-900 italic">T-{params.tableId}</p>
                   </div>
                </div>
 
                <div className="space-y-4 pt-10">
-                  <Button 
+                  <button 
                     onClick={() => setCurrentOrder(null)}
-                    variant="outline" 
-                    className="w-full h-20 rounded-[32px] border-white/5 bg-white/5 text-white font-black uppercase italic tracking-tighter text-lg hover:bg-white/10 transition-all"
+                    className="w-full h-16 rounded-2xl bg-white border border-gray-200 text-gray-900 font-bold uppercase tracking-widest text-sm hover:border-[#F15A24] transition-all shadow-sm"
                   >
                     Add More Items
-                  </Button>
+                  </button>
                   <div className="flex flex-col items-center gap-4">
-                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest italic leading-none">Scan & Settle</p>
-                    <p className="text-[9px] font-black text-slate-900 uppercase tracking-widest leading-none">Skip the counter and pay now</p>
-                    <div className="w-full h-px bg-white/5 mt-4" />
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic leading-none">Powered by Bhojan Sync</p>
+                    <div className="w-12 h-1 bg-gray-200 rounded-full mt-2" />
                   </div>
                </div>
             </div>
