@@ -319,6 +319,7 @@ export default function KitchenDashboard() {
               <p className="text-[10px] font-black text-slate-800 uppercase tracking-[0.3em]">No active sequences detected in this sector.</p>
             </div>
           </div>
+        )}
       </div>
 
       {/* PWA Install Promo */}
