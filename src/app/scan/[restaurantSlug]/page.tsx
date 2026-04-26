@@ -16,6 +16,7 @@ import {
   Search,
   ArrowRight,
   Loader2,
+  Trash2,
   MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -321,12 +322,31 @@ export default function GuestScanPage() {
                         <p className="text-[10px] font-black text-slate-600 mt-0.5 italic tracking-tighter uppercase line-clamp-1">{item.description}</p>
                         <div className="flex items-center justify-between mt-3">
                            <span className="text-lg font-black text-white italic">₹{item.price}</span>
-                           <button 
-                             onClick={() => addToCart(item)}
-                             className="w-8 h-8 rounded-xl bg-primary text-black flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg shadow-primary/20"
-                           >
-                              <Plus className="w-4 h-4" />
-                           </button>
+                           
+                           {cart.find(i => i.id === item.id) ? (
+                             <div className="flex items-center gap-3 bg-white/5 p-1 rounded-2xl border border-white/10 animate-in zoom-in duration-300">
+                               <button 
+                                 onClick={() => updateQty(item.id, -1)}
+                                 className="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500/20 active:scale-90 transition-all"
+                               >
+                                  {cart.find(i => i.id === item.id)?.qty === 1 ? <Trash2 className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
+                               </button>
+                               <span className="text-sm font-black text-white w-4 text-center">{cart.find(i => i.id === item.id)?.qty}</span>
+                               <button 
+                                 onClick={() => addToCart(item)}
+                                 className="w-8 h-8 rounded-xl bg-primary text-black flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg shadow-primary/20"
+                               >
+                                  <Plus className="w-4 h-4" />
+                               </button>
+                             </div>
+                           ) : (
+                             <button 
+                               onClick={() => addToCart(item)}
+                               className="w-8 h-8 rounded-xl bg-primary text-black flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg shadow-primary/20"
+                             >
+                                <Plus className="w-4 h-4" />
+                             </button>
+                           )}
                         </div>
                      </div>
                   </div>
