@@ -36,13 +36,31 @@ export default function LoginPage() {
       const user = auth.currentUser;
       if (!user) throw new Error("No active session");
 
-      const { data: profile, error } = await supabase
+      // 1. Try direct ID lookup
+      let { data: profile, error } = await supabase
         .from("user_profiles")
-        .select("role")
+        .select("*")
         .eq("id", user.uid)
         .single();
 
-      if (error || !profile) throw new Error("Profile not found");
+      // 2. SELF-HEALING: If ID fails, search by EMAIL (The common link)
+      if (error || !profile) {
+        const { data: emailProfile, error: emailError } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("email", user.email)
+          .single();
+
+        if (emailError || !emailProfile) throw new Error("Profile not found in database.");
+        
+        profile = emailProfile;
+        
+        // 3. AUTO-LINK: Save the Firebase UID into Supabase for future fast-track login
+        await supabase
+          .from("user_profiles")
+          .update({ id: user.uid })
+          .eq("email", user.email);
+      }
 
       let target = "/dashboard/admin";
       if (profile.role === 'super_admin') target = "/dashboard/super-admin";
