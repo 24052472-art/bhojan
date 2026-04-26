@@ -60,8 +60,12 @@ export default function SettingsPage() {
 
       if (error) throw error;
       if (data) {
+        // Map total tax back to split CGST/SGST for the UI
+        const totalTax = data.tax_percent || 0;
         setRestaurant({
           ...data,
+          cgst_percent: totalTax / 2,
+          sgst_percent: totalTax / 2,
           bank_details: data.bank_details || {
             account_name: "",
             bank_name: "",
@@ -81,10 +85,6 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // For now, since we're in a managed environment, we'll use a FileReader to show the image 
-    // and ideally you'd upload to Supabase Storage. 
-    // To make it work IMMEDIATELY for you, I'll allow you to paste the URL 
-    // but I'll also add a 'Simulated Upload' toast to show it's ready for storage config.
     const reader = new FileReader();
     reader.onloadend = () => {
       if (type === 'logo') {
@@ -100,6 +100,9 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Combine CGST and SGST into tax_percent for the database
+      const totalTax = (parseFloat(restaurant.cgst_percent) || 0) + (parseFloat(restaurant.sgst_percent) || 0);
+
       const { error } = await supabase
         .from("restaurants")
         .update({
@@ -110,9 +113,8 @@ export default function SettingsPage() {
           logo_url: restaurant.logo_url,
           merchant_qr_url: restaurant.merchant_qr_url,
           bank_details: restaurant.bank_details,
-          cgst_percent: parseFloat(restaurant.cgst_percent),
-          sgst_percent: parseFloat(restaurant.sgst_percent),
-          service_charge_percent: parseFloat(restaurant.service_charge_percent),
+          tax_percent: totalTax,
+          service_charge_percent: parseFloat(restaurant.service_charge_percent) || 0,
           gst_number: restaurant.gst_number
         })
         .eq("id", restaurant.id);
@@ -327,21 +329,21 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex justify-between items-center text-xs font-black uppercase italic">
                       <span className="text-slate-400">CGST ({restaurant.cgst_percent}%)</span>
-                      <span>₹{(1000 * restaurant.cgst_percent / 100).toFixed(2)}</span>
+                      <span>₹{(1000 * (parseFloat(restaurant.cgst_percent) || 0) / 100).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs font-black uppercase italic">
                       <span className="text-slate-400">SGST ({restaurant.sgst_percent}%)</span>
-                      <span>₹{(1000 * restaurant.sgst_percent / 100).toFixed(2)}</span>
+                      <span>₹{(1000 * (parseFloat(restaurant.sgst_percent) || 0) / 100).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center text-xs font-black uppercase italic">
                       <span className="text-slate-400">Service Charge ({restaurant.service_charge_percent}%)</span>
-                      <span>₹{(1000 * restaurant.service_charge_percent / 100).toFixed(2)}</span>
+                      <span>₹{(1000 * (parseFloat(restaurant.service_charge_percent) || 0) / 100).toFixed(2)}</span>
                     </div>
                     <div className="h-px bg-white/10 my-4" />
                     <div className="flex justify-between items-end">
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Grand Total</span>
                       <span className="text-4xl font-black italic text-primary tracking-tighter">
-                        ₹{(1000 * (1 + (parseFloat(restaurant.cgst_percent) + parseFloat(restaurant.sgst_percent) + parseFloat(restaurant.service_charge_percent)) / 100)).toFixed(0)}
+                        ₹{(1000 * (1 + ((parseFloat(restaurant.cgst_percent) || 0) + (parseFloat(restaurant.sgst_percent) || 0) + (parseFloat(restaurant.service_charge_percent) || 0)) / 100)).toFixed(0)}
                       </span>
                     </div>
                   </div>
