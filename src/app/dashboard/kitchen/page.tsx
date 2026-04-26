@@ -161,13 +161,23 @@ export default function KitchenDashboard() {
       
       // Broadcast to Waiter
       if (channelRef.current) {
-        console.log("KITCHEN: Broadcasting Signal To Waiters...", { broadcastType, tableNum });
+        console.log("KITCHEN: Broadcasting Signal To Waiters & Customers...", { broadcastType, tableNum });
         channelRef.current.send({
           type: 'broadcast',
           event: 'refresh_waiter',
           payload: { 
             type: broadcastType, 
             tableNum: tableNum || '??' 
+          }
+        });
+
+        // Broadcast specifically for the customer tracking this order
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'refresh_customer',
+          payload: { 
+            type: broadcastType, 
+            orderId: orderId 
           }
         });
       }

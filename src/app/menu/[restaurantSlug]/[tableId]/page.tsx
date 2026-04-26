@@ -113,7 +113,7 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
         filter: orderId ? `id=eq.${orderId}` : undefined
       }, (payload: any) => {
         const newStatus = payload.new?.status;
-        console.log("CUSTOMER: Status Update Received", newStatus);
+        console.log("CUSTOMER: Status Update Received via DB", newStatus);
         
         if (newStatus === 'preparing') {
           triggerNotification('PREPARING');
@@ -126,6 +126,16 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
           setCurrentOrder(null);
         } else {
           setCurrentOrder((prev: any) => prev ? { ...prev, status: newStatus } : null);
+        }
+      })
+      .on('broadcast', { event: 'refresh_customer' }, (payload: any) => {
+        const { type, orderId: bOrderId } = payload.payload;
+        console.log("CUSTOMER: Instant Broadcast Received", type, bOrderId);
+        
+        if (bOrderId === orderId) {
+          triggerNotification(type);
+          // Also update status locally for immediate UI feedback
+          setCurrentOrder((prev: any) => prev ? { ...prev, status: type === 'PREPARING' ? 'preparing' : 'ready' } : null);
         }
       })
       .subscribe((status) => {
