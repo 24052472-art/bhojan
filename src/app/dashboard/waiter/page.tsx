@@ -572,12 +572,50 @@ export default function WaiterDashboard() {
                  })()}
               </div>
             </div>
-            <div className="w-full md:w-[320px] bg-primary/[0.02] p-12 flex flex-col justify-between items-center border-l border-white/5">
-              <div className="space-y-8 w-full text-center">
-                <div className="w-full aspect-square bg-white rounded-[32px] p-6 flex items-center justify-center">
-                  {restaurant?.qr_code_url ? <img src={restaurant.qr_code_url} className="w-full h-full object-contain" /> : <QrCode className="w-12 h-12 text-slate-300" />}
+            <div className="w-full md:w-[350px] bg-primary/[0.02] p-10 flex flex-col justify-between items-center border-l border-white/5 overflow-y-auto no-scrollbar">
+              <div className="space-y-8 w-full">
+                <div className="text-center space-y-1">
+                   <p className="text-[8px] font-black uppercase tracking-[0.3em] text-primary">Scan & Pay</p>
+                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Merchant QR Portal</p>
                 </div>
-                <input placeholder="EMAIL RECEIPT" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} className="w-full bg-[#05070a] border border-white/5 rounded-xl px-4 py-3 text-[8px] font-black text-center" />
+
+                <div className="w-full aspect-square bg-white rounded-[32px] p-6 flex items-center justify-center shadow-2xl shadow-black/20">
+                  {restaurant?.merchant_qr_url ? (
+                    <img src={restaurant.merchant_qr_url} className="w-full h-full object-contain" />
+                  ) : (
+                    <QrCode className="w-12 h-12 text-slate-300" />
+                  )}
+                </div>
+
+                {restaurant?.bank_details?.bank_name && (
+                   <div className="space-y-4 pt-4 border-t border-white/5">
+                      <p className="text-[8px] font-black uppercase tracking-[0.3em] text-primary text-center">Bank Transfer</p>
+                      <div className="grid grid-cols-1 gap-2.5">
+                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">Bank</span>
+                            <span className="text-white italic">{restaurant.bank_details.bank_name}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">A/C No</span>
+                            <span className="text-white italic">{restaurant.bank_details.account_number}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">IFSC</span>
+                            <span className="text-white italic">{restaurant.bank_details.ifsc}</span>
+                         </div>
+                      </div>
+                   </div>
+                )}
+
+                <div className="space-y-2">
+                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-600 text-center">Receipt Email</p>
+                  <input 
+                    placeholder="customer@email.com" 
+                    value={customerEmail} 
+                    onChange={(e) => setCustomerEmail(e.target.value)} 
+                    className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-[10px] font-black text-center text-white focus:border-primary/30 outline-none transition-all" 
+                  />
+                </div>
               </div>
               <Button onClick={handleFinalCheckout} disabled={isProcessingPayment} className="w-full h-16 rounded-[24px] bg-primary text-black font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/10">
                  {isProcessingPayment ? <Loader2 className="w-5 h-5 animate-spin" /> : "Paid & Close Table"}

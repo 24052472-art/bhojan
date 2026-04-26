@@ -62,10 +62,10 @@ export default function DashboardLayout({
       const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
         if (fbUser) {
           // Master Admin Fallback
-          if (fbUser.email === "aalokkushwaha285@gmail.com") {
+          if (fbUser.email === "abhi.kush047@gmail.com") {
             if (isMounted) {
-              setRole("owner");
-              localStorage.setItem("bhojan_role", "owner");
+              setRole("super_admin");
+              localStorage.setItem("bhojan_role", "super_admin");
               setIsDeterminingRole(false);
             }
             return;

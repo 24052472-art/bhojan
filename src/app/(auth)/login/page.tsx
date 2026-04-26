@@ -37,7 +37,7 @@ export default function LoginPage() {
       if (!user) throw new Error("No active session");
 
       // MASTER OVERRIDE: If it's the owner's email, give them immediate access
-      if (user.email === 'aalokkushwaha285@gmail.com') {
+      if (user.email === 'abhi.kush047@gmail.com') {
         return window.location.assign("/dashboard/super-admin");
       }
 

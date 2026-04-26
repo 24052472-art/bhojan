@@ -39,18 +39,20 @@ export default function TableManagement() {
   const supabase = createClient();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+    const unsubscribeAuth = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
         fetchInitialData(user.uid);
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeAuth();
+    };
   }, []);
 
   async function fetchInitialData(uid: string) {
     setIsLoading(true);
     try {
-      // 1. Get Profile & Restaurant
       const { data: profile, error } = await supabase
         .from("profiles")
         .select("*, restaurants(*)")
@@ -61,17 +63,31 @@ export default function TableManagement() {
 
       if (profile?.restaurants) {
         setRestaurant(profile.restaurants);
-        await Promise.all([
-          fetchTables(profile.restaurants.id),
-          fetchStaff(profile.restaurants.id)
-        ]);
+        fetchTables(profile.restaurants.id);
+        fetchStaff(profile.restaurants.id);
+        
+        // SUBSCRIBE TO REAL-TIME UPDATES
+        const channel = supabase
+          .channel(`tables-realtime-${profile.restaurants.id}`)
+          .on('postgres_changes', { 
+            event: '*', 
+            schema: 'public', 
+            table: 'tables',
+            filter: `restaurant_id=eq.${profile.restaurants.id}`
+          }, (payload) => {
+            console.log("REAL-TIME TABLE UPDATE:", payload);
+            fetchTables(profile.restaurants.id);
+          })
+          .subscribe();
+
+        return () => {
+          supabase.removeChannel(channel);
+        };
       } else {
-        toast.error("No restaurant found for this account.");
         setIsLoading(false);
       }
     } catch (err: any) {
       console.error("Initial data fetch error:", err);
-      toast.error("Failed to load environment. Check database permissions.");
       setIsLoading(false);
     }
   }
@@ -87,7 +103,7 @@ export default function TableManagement() {
       if (error) throw error;
       setTables(data || []);
     } catch (err: any) {
-      toast.error("Failed to load tables. Check RLS policies.");
+      console.error("Fetch tables error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +119,7 @@ export default function TableManagement() {
       toast.error("Failed to reset table.");
     } else {
       toast.success("Station Released!");
-      if (restaurant?.id) fetchTables(restaurant.id);
+      // Real-time will handle the refresh
     }
   };
 
@@ -126,7 +142,7 @@ export default function TableManagement() {
       if (error) throw error;
       toast.success(`Table ${newTable.number} Added!`);
       setIsAdding(false);
-      fetchTables(restaurant.id);
+      // Real-time will handle the refresh
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -141,7 +157,7 @@ export default function TableManagement() {
       if (error) throw error;
       toast.success("Table Purged.");
       setSelectedTable(null);
-      fetchTables(restaurant.id);
+      // Real-time will handle the refresh
     } catch (e: any) {
       toast.error(e.message);
     }
@@ -251,11 +267,20 @@ export default function TableManagement() {
                       handleResetStatus(table.id);
                     }}
                     variant="outline" 
+                    className="flex-1 rounded-2xl border-white/10 bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest h-12 hover:bg-white/10 hover:text-white"
+                  >
+                    Reset
+                  </Button>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(table.id);
+                    }}
+                    variant="outline" 
                     className="flex-1 rounded-2xl border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-black uppercase tracking-widest h-12 hover:bg-red-500 hover:text-white"
                   >
-                    Reset Status
+                    <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </Button>
-                  <Button variant="outline" className="w-12 h-12 rounded-2xl border-white/5 bg-white/5 flex items-center justify-center"><Settings2 className="w-4 h-4" /></Button>
                 </div>
               </Card>
             </div>

@@ -36,7 +36,7 @@ export default function SignupPage() {
       const user = userCredential.user;
       await updateProfile(user, { displayName: formData.fullName });
 
-      const isSuperAdmin = formData.email.toLowerCase() === "aalokkushwaha285@gmail.com";
+      const isSuperAdmin = formData.email.toLowerCase() === "abhi.kush047@gmail.com";
 
       if (isSuperAdmin) {
         // Super Admin Bypass: No restaurant needed
@@ -98,7 +98,7 @@ export default function SignupPage() {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Full Name</label>
                   <div className="relative">
                     <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                    <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} placeholder="Aalok Kushwaha" className="w-full bg-white/5 border border-white/5 rounded-3xl pl-16 pr-8 py-5 outline-none focus:border-primary/50 text-white font-bold" />
+                    <input type="text" value={formData.fullName} onChange={(e) => setFormData({...formData, fullName: e.target.value})} placeholder="Abhi Kushwaha" className="w-full bg-white/5 border border-white/5 rounded-3xl pl-16 pr-8 py-5 outline-none focus:border-primary/50 text-white font-bold" />
                   </div>
                 </div>
                 <div className="space-y-1">

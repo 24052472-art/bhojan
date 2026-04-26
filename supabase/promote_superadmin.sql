@@ -6,7 +6,7 @@ SET role = 'super_admin'
 WHERE id IN (
   SELECT id 
   FROM auth.users 
-  WHERE email = 'aalokkushwaha285@gmail.com'
+  WHERE email = 'abhi.kush047@gmail.com'
 );
 
 -- If the profile doesn't exist yet (user hasn't signed up), 

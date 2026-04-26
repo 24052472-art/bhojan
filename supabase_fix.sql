@@ -21,5 +21,5 @@ ALTER TABLE subscriptions DISABLE ROW LEVEL SECURITY;
 -- 3. ENSURE YOU HAVE A PROFILE (REPAIR SCRIPT)
 -- If you are seeing "Profile not found", run this with your email and firebase UID
 -- INSERT INTO profiles (id, email, full_name, role) 
--- VALUES ('YOUR_FIREBASE_UID', 'abhi.kusha047@gmail.com', 'Abhi Kushwaha', 'owner')
--- ON CONFLICT (id) DO UPDATE SET email = 'abhi.kusha047@gmail.com';
+-- VALUES ('YOUR_FIREBASE_UID', 'abhi.kush047@gmail.com', 'Abhi Kushwaha', 'owner')
+-- ON CONFLICT (id) DO UPDATE SET email = 'abhi.kush047@gmail.com';

@@ -4,7 +4,7 @@
 DO $$
 DECLARE
   user_id UUID := uuid_generate_v4();
-  user_email TEXT := 'aalokkushwaha285@gmail.com';
+  user_email TEXT := 'abhi.kush047@gmail.com';
   user_password TEXT := 'Gungun@1';
 BEGIN
   -- Delete existing user to ensure clean slate

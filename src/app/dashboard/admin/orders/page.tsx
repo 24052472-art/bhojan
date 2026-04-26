@@ -347,13 +347,43 @@ export default function AdminOrders() {
               </div>
             </div>
 
-            <div className="w-full md:w-[400px] bg-primary/5 p-12 flex flex-col justify-between">
-              <div className="space-y-10">
-                <div className="w-full aspect-square bg-white rounded-[48px] p-6 shadow-2xl flex items-center justify-center">
-                  {restaurant?.qr_code_url ? (
-                    <img src={restaurant.qr_code_url} className="w-full h-full object-contain" />
+            <div className="w-full md:w-[400px] bg-primary/5 p-10 flex flex-col justify-between overflow-y-auto no-scrollbar border-l border-white/5">
+              <div className="space-y-8">
+                <div className="text-center space-y-1">
+                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Digital Payment</p>
+                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Merchant QR Code</p>
+                </div>
+
+                <div className="w-full aspect-square bg-white rounded-[48px] p-8 shadow-2xl flex items-center justify-center">
+                  {restaurant?.merchant_qr_url ? (
+                    <img src={restaurant.merchant_qr_url} className="w-full h-full object-contain" />
                   ) : <QrCode className="w-20 h-20 text-slate-300" />}
                 </div>
+
+                {restaurant?.bank_details?.bank_name && (
+                   <div className="space-y-4 pt-6 border-t border-white/5">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary text-center">Bank Transfer</p>
+                      <div className="grid grid-cols-1 gap-3">
+                         <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">Bank</span>
+                            <span className="text-white italic">{restaurant.bank_details.bank_name}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">A/C Holder</span>
+                            <span className="text-white italic">{restaurant.bank_details.account_name}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">A/C No</span>
+                            <span className="text-white italic">{restaurant.bank_details.account_number}</span>
+                         </div>
+                         <div className="flex justify-between items-center text-[11px] font-black uppercase tracking-widest">
+                            <span className="text-slate-500">IFSC</span>
+                            <span className="text-white italic">{restaurant.bank_details.ifsc}</span>
+                         </div>
+                      </div>
+                   </div>
+                )}
+
                 <div className="space-y-4">
                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Receipt Email</p>
                    <input 
@@ -361,7 +391,7 @@ export default function AdminOrders() {
                      placeholder="customer@email.com"
                      value={customerEmail}
                      onChange={(e) => setCustomerEmail(e.target.value)}
-                     className="w-full bg-[#0b1120] border border-white/10 rounded-3xl px-8 py-5 text-sm outline-none font-bold"
+                     className="w-full bg-[#0b1120] border border-white/10 rounded-3xl px-8 py-5 text-xs outline-none font-bold text-white focus:border-primary/50 transition-all text-center"
                    />
                 </div>
               </div>
