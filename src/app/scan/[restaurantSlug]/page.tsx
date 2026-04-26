@@ -354,42 +354,61 @@ export default function GuestScanPage() {
                 ))}
              </div>
 
-             <div className="grid grid-cols-1 gap-4">
+             <div className="grid grid-cols-1 gap-6">
                 {filteredMenu.map(item => (
-                  <div key={item.id} className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 flex items-center gap-5 relative group active:scale-[0.98] transition-all">
-                     <div className={`absolute top-4 right-4 w-1 h-1 rounded-full ${item.is_veg ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
-                     <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl font-black text-primary uppercase italic shrink-0">
-                        {item.name.charAt(0)}
+                  <div key={item.id} className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[32px] overflow-hidden group active:scale-[0.98] transition-all shadow-xl shadow-black/20">
+                     {/* Dish Image Container */}
+                     <div className="relative h-48 w-full overflow-hidden bg-slate-800">
+                        {item.image_url ? (
+                           <img 
+                              src={item.image_url} 
+                              alt={item.name} 
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                           />
+                        ) : (
+                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-transparent">
+                              <ChefHat className="w-12 h-12 text-primary/20" />
+                           </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
+                        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest backdrop-blur-md border ${item.is_veg ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-red-500/20 border-red-500/30 text-red-400'}`}>
+                           {item.is_veg ? 'Pure Veg' : 'Non-Veg'}
+                        </div>
                      </div>
-                     <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-black uppercase italic tracking-tighter leading-tight text-white">{item.name}</h4>
-                        <p className="text-[10px] font-black text-slate-600 mt-0.5 italic tracking-tighter uppercase line-clamp-1">{item.description}</p>
-                        <div className="flex items-center justify-between mt-3">
-                           <span className="text-lg font-black text-white italic">₹{item.price}</span>
-                           
+
+                     <div className="p-6 space-y-4">
+                        <div className="flex justify-between items-start gap-4">
+                           <div className="space-y-1">
+                              <h4 className="text-lg font-black uppercase italic tracking-tighter leading-tight text-white">{item.name}</h4>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest line-clamp-2 leading-relaxed">{item.description}</p>
+                           </div>
+                           <span className="text-2xl font-black text-primary italic shrink-0">₹{item.price}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-end">
                            {cart.find(i => i.id === item.id) ? (
-                             <div className="flex items-center gap-3 bg-white/5 p-1 rounded-2xl border border-white/10 animate-in zoom-in duration-300">
+                             <div className="flex items-center gap-4 bg-white/5 p-1.5 rounded-2xl border border-white/10 w-full justify-between">
                                <button 
                                  onClick={() => updateQty(item.id, -1)}
-                                 className="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500/20 active:scale-90 transition-all"
+                                 className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500/20 active:scale-90 transition-all"
                                >
                                   {cart.find(i => i.id === item.id)?.qty === 1 ? <Trash2 className="w-4 h-4" /> : <Minus className="w-4 h-4" />}
                                </button>
-                               <span className="text-sm font-black text-white w-4 text-center">{cart.find(i => i.id === item.id)?.qty}</span>
+                               <span className="text-sm font-black text-white">{cart.find(i => i.id === item.id)?.qty} in bucket</span>
                                <button 
                                  onClick={() => addToCart(item)}
-                                 className="w-8 h-8 rounded-xl bg-primary text-black flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg shadow-primary/20"
+                                 className="w-10 h-10 rounded-xl bg-primary text-black flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg shadow-primary/20"
                                >
                                   <Plus className="w-4 h-4" />
                                </button>
                              </div>
                            ) : (
-                             <button 
+                             <Button 
                                onClick={() => addToCart(item)}
-                               className="w-8 h-8 rounded-xl bg-primary text-black flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg shadow-primary/20"
+                               className="w-full h-12 rounded-2xl bg-white/5 border border-white/10 text-primary font-black uppercase tracking-widest text-[9px] hover:bg-primary hover:text-black transition-all gap-2"
                              >
-                                <Plus className="w-4 h-4" />
-                             </button>
+                                <Plus className="w-3 h-3" /> Add to Bucket
+                             </Button>
                            )}
                         </div>
                      </div>
