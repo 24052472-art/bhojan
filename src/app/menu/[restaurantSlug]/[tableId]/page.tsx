@@ -37,6 +37,9 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
   const [isLive, setIsLive] = useState(false);
   const [notification, setNotification] = useState<{ type: 'COOKED' | 'PREPARING', id: string } | null>(null);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [isPageReady, setIsPageReady] = useState(false);
 
   const supabase = createClient();
   const channelRef = useRef<any>(null);
@@ -254,13 +257,31 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
   const filteredMenu = selectedCategory === "All" ? menu : menu.filter(i => i.category === selectedCategory);
 
   if (isLoading) return (
-    <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
-      <Loader2 className="w-10 h-10 animate-spin text-[#F15A24]" />
+    <div className="min-h-screen bg-[#020617] p-6 space-y-8 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-white/5 animate-pulse" />
+          <div className="space-y-2">
+            <div className="w-24 h-4 bg-white/5 rounded animate-pulse" />
+            <div className="w-16 h-2 bg-white/5 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="w-10 h-10 rounded-xl bg-white/5 animate-pulse" />
+      </div>
+      <div className="w-full h-48 rounded-[40px] bg-white/5 animate-pulse" />
+      <div className="flex gap-3 overflow-hidden">
+        {[1,2,3,4].map(i => <div key={i} className="min-w-[100px] h-10 rounded-full bg-white/5 animate-pulse" />)}
+      </div>
+      <div className="space-y-4">
+        {[1,2,3].map(i => (
+          <div key={i} className="w-full h-32 rounded-[32px] bg-white/5 animate-pulse" />
+        ))}
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] text-[#1F2937] pb-32">
+    <div className="min-h-screen bg-[#020617] text-white pb-32 selection:bg-[#00d4ff]/30">
       {/* Realtime Status Badge */}
       <div className={cn(
         "fixed top-4 right-4 z-[100] px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest flex items-center gap-2 border transition-all duration-500",
@@ -306,83 +327,136 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
       <AnimatePresence>
         {currentOrder && !showCheckout && (
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed inset-0 z-50 bg-[#F3F4F6] flex flex-col items-center justify-center p-10 text-center overflow-y-auto no-scrollbar"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 bg-[#020617] flex flex-col p-8 overflow-y-auto no-scrollbar"
           >
-            <div className="absolute top-12 left-1/2 -translate-x-1/2">
-               <h1 className="text-xl font-black italic tracking-tighter uppercase text-gray-400">{restaurant?.name}</h1>
-               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Order Confirmed</p>
-            </div>
+            {/* Immersive Background Elements */}
+            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#00d4ff]/10 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#00ff88]/5 blur-[150px] pointer-events-none" />
 
-            <div className="space-y-12 w-full max-w-sm">
-               <div className="relative">
-                  <div className="w-32 h-32 rounded-full bg-emerald-50 flex items-center justify-center mx-auto border-4 border-white shadow-xl">
-                    <CheckCircle2 className="w-16 h-16 text-[#16A34A]" />
-                  </div>
-                  <div className="absolute inset-0 bg-emerald-100 blur-3xl rounded-full -z-10 animate-pulse" />
-               </div>
-
-               <div className="space-y-4">
-                  <h2 className="text-5xl font-black italic uppercase tracking-tighter text-gray-900 leading-tight">
-                    CHEF <span className="text-[#16A34A]">NOTIFIED</span>
-                  </h2>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                    YOUR ORDER FOR TABLE <span className="text-gray-900">{params.tableId}</span> IS BEING PREPARED.
-                  </p>
-               </div>
-
-               <div className="bg-white border border-gray-100 p-8 rounded-[40px] shadow-sm space-y-6">
-                  <div className="flex justify-between items-center">
-                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Order Status</p>
-                     <span className={cn(
-                       "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                       currentOrder.status === 'pending' ? 'bg-orange-50 text-white border-orange-100' : 
-                       currentOrder.status === 'preparing' ? 'bg-blue-500 text-white border-blue-100' : 
-                       'bg-[#16A34A] text-white border-green-100'
-                     )}>
-                       {currentOrder.status}
-                     </span>
-                  </div>
-                  <div className="flex justify-between items-center border-t border-gray-50 pt-6">
-                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Station</p>
-                     <p className="text-xl font-extrabold text-gray-900 italic">T-{params.tableId}</p>
+            <div className="relative flex-1 flex flex-col items-center pt-12">
+               <div className="mb-12 text-center">
+                  <h1 className="text-xl font-black italic uppercase tracking-[0.3em] text-[#00d4ff]">BHOJAN <span className="text-white">SYNC</span></h1>
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                     <div className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-ping" />
+                     <p className="text-[9px] font-black text-[#00ff88] uppercase tracking-widest">Tracking Live Table {params.tableId}</p>
                   </div>
                </div>
 
-               <div className="space-y-4 pt-10">
+               {/* Advanced Progress UI */}
+               <div className="w-full max-w-sm space-y-16 mb-16">
+                  <div className="flex justify-between relative">
+                     {/* Progress Line */}
+                     <div className="absolute top-6 left-0 right-0 h-0.5 bg-white/5 mx-6">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: currentOrder.status === 'pending' ? '15%' : currentOrder.status === 'preparing' ? '50%' : '100%' }}
+                          className="h-full bg-gradient-to-r from-[#00d4ff] to-[#00ff88] shadow-[0_0_15px_#00d4ff]"
+                        />
+                     </div>
+                     
+                     {[
+                       { step: 'pending', icon: Building, label: 'Received' },
+                       { step: 'preparing', icon: ChefHat, label: 'Cooking' },
+                       { step: 'ready', icon: CheckCircle2, label: 'Ready' }
+                     ].map((s, idx) => {
+                       const isActive = currentOrder.status === s.step;
+                       const isPast = (s.step === 'pending' && (currentOrder.status === 'preparing' || currentOrder.status === 'ready')) || 
+                                    (s.step === 'preparing' && currentOrder.status === 'ready');
+                       
+                       return (
+                         <div key={s.step} className="relative z-10 flex flex-col items-center gap-4">
+                            <div className={cn(
+                              "w-12 h-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-700",
+                              isActive ? "bg-black border-[#00d4ff] shadow-[0_0_20px_rgba(0,212,255,0.4)] scale-125" : 
+                              isPast ? "bg-[#00ff88] border-[#00ff88] text-black" : 
+                              "bg-[#020617] border-white/10 text-white/20"
+                            )}>
+                               <s.icon className={cn("w-5 h-5", isActive ? "text-[#00d4ff] animate-pulse" : isPast ? "text-black" : "")} />
+                            </div>
+                            <span className={cn(
+                              "text-[8px] font-black uppercase tracking-widest italic transition-colors duration-700",
+                              isActive ? "text-[#00d4ff]" : isPast ? "text-[#00ff88]" : "text-white/20"
+                            )}>{s.label}</span>
+                         </div>
+                       )
+                     })}
+                  </div>
+
+                  <div className="text-center space-y-4">
+                     <motion.h2 
+                       animate={{ opacity: [0.5, 1, 0.5] }}
+                       transition={{ repeat: Infinity, duration: 2 }}
+                       className="text-5xl font-black italic uppercase tracking-tighter text-white"
+                     >
+                       {currentOrder.status === 'pending' ? 'SECURED' : currentOrder.status === 'preparing' ? 'CRAFTING' : 'READY'}
+                     </motion.h2>
+                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] max-w-[200px] mx-auto leading-relaxed">
+                       {currentOrder.status === 'pending' ? 'ORDER IS IN THE QUEUE.' : 
+                        currentOrder.status === 'preparing' ? 'CHEF IS WORKING THEIR MAGIC.' : 
+                        'GATHER YOUR TOOLS, IT IS SERVED.'}
+                     </p>
+                  </div>
+               </div>
+
+               {/* Order Summary Glass Card */}
+               <div className="w-full max-w-sm bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-[40px] p-8 mb-12">
+                  <div className="flex justify-between items-center mb-6">
+                     <p className="text-[10px] font-black text-white/20 uppercase tracking-widest italic">In Preparation</p>
+                     <span className="text-[10px] font-black text-[#00d4ff] italic uppercase">ID: #{currentOrder.id?.slice(-4)}</span>
+                  </div>
+                  <div className="space-y-4">
+                     {cart.length > 0 ? cart.map((item, i) => (
+                       <div key={i} className="flex justify-between items-center">
+                          <p className="text-sm font-black italic text-white uppercase truncate pr-4">{item.name}</p>
+                          <span className="text-xs font-black text-[#00ff88] italic">×{item.quantity}</span>
+                       </div>
+                     )) : (
+                       <p className="text-[10px] font-black text-white/40 uppercase text-center italic">Synchronizing Menu Items...</p>
+                     )}
+                  </div>
+               </div>
+
+               <div className="w-full max-w-sm space-y-4">
                   <button 
                     onClick={() => setCurrentOrder(null)}
-                    className="w-full h-16 rounded-2xl bg-white border border-gray-200 text-gray-900 font-bold uppercase tracking-widest text-sm hover:border-[#F15A24] transition-all shadow-sm"
+                    className="w-full h-16 rounded-[24px] bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-[#00d4ff] transition-all shadow-2xl active:scale-95"
                   >
-                    Add More Items
+                    ADD MORE FLAVORS
                   </button>
-                  <div className="flex flex-col items-center gap-4">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic leading-none">Powered by Bhojan Sync</p>
-                    <div className="w-12 h-1 bg-gray-200 rounded-full mt-2" />
-                  </div>
+                  <button className="w-full h-16 rounded-[24px] bg-white/5 border border-white/10 text-white/40 font-black uppercase tracking-widest text-[9px] italic">
+                    NEED ASSISTANCE?
+                  </button>
                </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <header className="sticky top-0 z-40 bg-white shadow-sm px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#F15A24] flex items-center justify-center text-white font-black italic">
-            {restaurant?.name?.charAt(0) || 'B'}
+      <header className="sticky top-0 z-40 bg-[#020617]/80 backdrop-blur-2xl border-b border-white/5 px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#00d4ff] to-[#00ff88] rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+            <div className="relative w-12 h-12 rounded-full bg-black border border-white/10 flex items-center justify-center text-[#00d4ff] font-black italic text-xl shadow-2xl">
+              {restaurant?.name?.charAt(0) || 'B'}
+            </div>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900 leading-none">{restaurant?.name || 'Bhojan'}</h1>
-            <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-1">Table {params.tableId}</p>
+            <h1 className="text-xl font-black italic uppercase tracking-tighter text-white leading-none">{restaurant?.name || 'Bhojan'}</h1>
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00ff88] animate-pulse" />
+              <p className="text-[9px] text-[#00ff88] font-black uppercase tracking-[0.2em]">Live at Station {params.tableId}</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-           <button className="text-gray-400 hover:text-gray-600"><Search className="w-5 h-5" /></button>
-           <button className="text-gray-400 hover:text-gray-600 relative">
-             <ShoppingBag className="w-5 h-5" />
+        <div className="flex items-center gap-5">
+           <button className="text-white/40 hover:text-[#00d4ff] transition-colors"><Search className="w-6 h-6" /></button>
+           <button className="relative group">
+             <div className="absolute -inset-2 bg-[#00d4ff]/20 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+             <ShoppingBag className="w-6 h-6 text-white relative" />
              {cart.length > 0 && (
-               <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#F15A24] text-white text-[8px] font-bold flex items-center justify-center rounded-full">
+               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#00d4ff] text-black text-[10px] font-black flex items-center justify-center rounded-full shadow-[0_0_15px_rgba(0,212,255,0.5)]">
                  {cart.length}
                </span>
              )}
@@ -390,69 +464,121 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
         </div>
       </header>
 
-      {/* Hero / Restaurant Info */}
-      <section className="bg-white px-6 py-8 mb-4">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-[#F15A24] uppercase tracking-widest">
-            <Star className="w-3 h-3 fill-[#F15A24]" />
-            Best in {restaurant?.city || 'the area'}
-          </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Enjoy your meal at {restaurant?.name}</h2>
-          <div className="flex items-center gap-6 text-xs text-gray-500 font-medium">
-             <div className="flex items-center gap-1"><Building className="w-4 h-4" /> Dine-in</div>
-             <div className="flex items-center gap-1"><Info className="w-4 h-4" /> Details</div>
+      {/* Hero / Brand Experience */}
+      <section className="px-6 py-8">
+        <div className="relative h-64 rounded-[48px] overflow-hidden group shadow-2xl border border-white/10">
+          <img 
+            src={restaurant?.banner_url || "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800"} 
+            alt="Restaurant" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[3s]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/40 to-transparent" />
+          <div className="absolute bottom-8 left-8 right-8">
+            <div className="flex items-center gap-2 text-[10px] font-black text-[#00ff88] uppercase tracking-[0.3em] mb-3">
+              <Star className="w-3.5 h-3.5 fill-[#00ff88]" />
+              Signature Dining Experience
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.9] max-w-[250px]">
+              TASTE THE <span className="text-[#00d4ff]">FUTURE</span>
+            </h2>
+            <div className="flex items-center gap-5 mt-6">
+               <div className="px-4 py-2 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60">
+                 <Building className="w-4 h-4 text-[#00d4ff]" /> {restaurant?.city || 'Premium'}
+               </div>
+               <div className="px-4 py-2 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/60">
+                 <Wifi className="w-4 h-4 text-[#00ff88]" /> Instant Order
+               </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Menu Sections */}
-      <section className="px-4 pb-40">
-        <div className="space-y-8">
+      {/* Menu Sections / Dynamic Grid */}
+      <section className="px-4 pb-40 relative">
+        <div className="space-y-12">
           {categories.filter(c => c !== "All").map((category) => (
-            <div key={category} id={`category-${category}`} className="space-y-4">
-              <h3 className="text-xl font-bold text-gray-900 ml-2">{category}</h3>
-              <div className="space-y-3">
+            <div key={category} id={`category-${category}`} className="space-y-6 scroll-mt-28">
+              <div className="flex items-center gap-4 ml-2">
+                <h3 className="text-2xl font-black italic uppercase tracking-tighter text-white">{category}</h3>
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+              </div>
+              <div className="space-y-4">
                 {menu.filter(i => i.category === category).map((item) => (
-                  <div 
+                  <motion.div 
+                    layout
                     key={item.id} 
-                    className="bg-white p-4 rounded-2xl flex gap-4 shadow-sm active:scale-[0.98] transition-all"
+                    className="group relative bg-white/[0.03] backdrop-blur-2xl p-4 rounded-[32px] border border-white/10 flex gap-5 hover:border-[#00d4ff]/50 transition-all duration-500 overflow-hidden shadow-2xl"
                   >
-                    <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0 border border-gray-100">
+                    {/* Glowing background effect */}
+                    <div className="absolute -inset-20 bg-[#00d4ff]/5 blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                    
+                    <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-[24px] overflow-hidden bg-white/5 shrink-0 border border-white/5">
                       <img 
                         src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} 
                         alt={item.name} 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" 
                       />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between py-0.5">
-                      <div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                           <div className={cn("w-2 h-2 rounded-full", item.is_veg ? "bg-green-500" : "bg-red-500")} />
-                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{item.is_veg ? 'VEG' : 'NON-VEG'}</span>
+                      {item.price > 150 && (
+                        <div className="absolute top-2 left-2 px-2 py-1 bg-black/80 backdrop-blur-md rounded-lg border border-[#00ff88]/30 flex items-center gap-1">
+                           <div className="w-1 h-1 rounded-full bg-[#00ff88] shadow-[0_0_5px_#00ff88]" />
+                           <span className="text-[7px] font-black text-[#00ff88] uppercase tracking-widest leading-none">Popular</span>
                         </div>
-                        <h4 className="text-base font-bold text-gray-900 leading-snug line-clamp-1">{item.name}</h4>
-                        <p className="text-[11px] text-gray-400 font-medium line-clamp-1 mt-0.5">{item.description || 'Tasty and fresh.'}</p>
+                      )}
+                    </div>
+                    
+                    <div className="relative flex-1 flex flex-col justify-between py-1">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                           <div className={cn("w-2.5 h-2.5 rounded-sm border border-black shadow-sm", item.is_veg ? "bg-[#00ff88]" : "bg-red-500")} />
+                           <span className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">{item.is_veg ? 'Pure Veg' : 'Non-Veg'}</span>
+                        </div>
+                        <h4 className="text-xl font-black italic uppercase tracking-tighter text-white group-hover:text-[#00d4ff] transition-colors leading-tight">{item.name}</h4>
+                        <p className="text-[11px] text-white/40 font-bold uppercase tracking-wide line-clamp-2 mt-1.5 italic leading-relaxed">{item.description || 'A masterpiece of culinary engineering.'}</p>
                       </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-lg font-extrabold text-gray-900">₹{item.price}</span>
+                      <div className="flex justify-between items-end mt-4">
+                        <div className="flex flex-col">
+                           <span className="text-[10px] font-black text-[#00d4ff] uppercase tracking-widest leading-none mb-1">Premium</span>
+                           <span className="text-2xl font-black italic tracking-tighter text-white leading-none">₹{item.price}</span>
+                        </div>
+                        
                         {cart.find(i => i.id === item.id) ? (
-                          <div className="flex items-center gap-4 bg-[#F15A24]/10 text-[#F15A24] px-3 py-1.5 rounded-full border border-[#F15A24]/20">
-                            <button onClick={() => removeFromCart(item.id)}><Minus className="w-4 h-4" /></button>
-                            <span className="text-sm font-bold w-4 text-center">{cart.find(i => i.id === item.id).quantity}</span>
-                            <button onClick={() => addToCart(item)}><Plus className="w-4 h-4" /></button>
+                          <div className="flex items-center gap-5 bg-white/5 backdrop-blur-xl text-white px-4 py-2 rounded-2xl border border-white/10 shadow-2xl">
+                            <button onClick={() => removeFromCart(item.id)} className="hover:text-red-500 transition-colors"><Minus className="w-5 h-5" /></button>
+                            <span className="text-base font-black italic">{cart.find(i => i.id === item.id).quantity}</span>
+                            <button onClick={() => addToCart(item)} className="hover:text-[#00ff88] transition-colors"><Plus className="w-5 h-5" /></button>
                           </div>
                         ) : (
-                          <button 
+                          <motion.button 
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => addToCart(item)}
-                            className="bg-white border border-gray-200 text-[#F15A24] text-[10px] font-bold px-6 py-2 rounded-full shadow-sm hover:border-[#F15A24] transition-all uppercase tracking-widest"
+                            className="bg-[#00d4ff] text-black px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_10px_20px_rgba(0,212,255,0.3)] hover:shadow-[#00d4ff]/50 transition-all active:scale-95"
                           >
-                            ADD
-                          </button>
+                            ADD ITEM
+                          </motion.button>
                         )}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+              </div>
+              
+              {/* Smart Recommendations Bridge */}
+              <div className="py-6 px-4 rounded-[40px] bg-gradient-to-br from-[#00d4ff]/5 to-transparent border border-white/5">
+                <p className="text-[10px] font-black text-[#00d4ff] uppercase tracking-[0.3em] mb-4 italic leading-none">Frequently Paired With</p>
+                <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                  {menu.slice(0, 3).map(rec => (
+                    <div key={rec.id} className="min-w-[140px] space-y-3 group cursor-pointer" onClick={() => addToCart(rec)}>
+                      <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10">
+                        <img src={rec.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                           <Plus className="w-6 h-6 text-[#00d4ff]" />
+                        </div>
+                      </div>
+                      <p className="text-[10px] font-black text-white uppercase tracking-tighter truncate leading-none">{rec.name}</p>
+                      <p className="text-[9px] font-black text-[#00ff88] leading-none tracking-widest">+ ₹{rec.price}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
@@ -474,76 +600,39 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
         </button>
       </div>
 
-      {/* Sticky Cart Bar (Zapmenus style) */}
+      {/* Sticky Cart Bar (Bhojan Next-Gen) */}
       <AnimatePresence>
         {cart.length > 0 && !showCheckout && (
           <motion.div 
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            className="fixed bottom-6 left-4 right-4 z-50"
+            initial={{ y: 100, scale: 0.9, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: 100, scale: 0.9, opacity: 0 }}
+            className="fixed bottom-8 left-4 right-4 z-50"
           >
             <button 
               onClick={() => setShowCheckout(true)}
-              className="w-full bg-[#16A34A] h-16 rounded-2xl flex items-center justify-between px-6 shadow-[0_10px_30px_rgba(22,163,74,0.3)] group"
+              className="w-full bg-[#00ff88] h-20 rounded-[32px] flex items-center justify-between px-8 shadow-[0_20px_40px_rgba(0,255,136,0.2)] group overflow-hidden relative"
             >
-              <div className="flex items-center gap-4">
-                 <div className="bg-white/20 p-2 rounded-lg">
-                    <ShoppingBag className="w-5 h-5 text-white" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              
+              <div className="flex items-center gap-5 relative">
+                 <div className="bg-black/20 p-3 rounded-2xl backdrop-blur-md">
+                    <ShoppingBag className="w-6 h-6 text-black" />
                  </div>
                  <div className="text-left">
-                    <p className="text-[10px] text-white/80 font-bold uppercase tracking-wider">{cart.reduce((a,b) => a+b.quantity, 0)} Items</p>
-                    <p className="text-lg text-white font-black">₹{subtotal}</p>
+                    <p className="text-[10px] text-black/60 font-black uppercase tracking-[0.2em]">{cart.reduce((a,b) => a+b.quantity, 0)} SELECTIONS</p>
+                    <p className="text-2xl text-black font-black italic">₹{subtotal}</p>
                  </div>
               </div>
-              <div className="flex items-center gap-1 text-white font-bold text-sm uppercase tracking-widest">
-                View Order <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <div className="flex items-center gap-2 text-black font-black text-sm uppercase tracking-[0.2em] relative">
+                VIEW BUCKET <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Category Bottom Sheet */}
-      <AnimatePresence>
-        {showCategoryMenu && (
-          <>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowCategoryMenu(false)}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
-            />
-            <motion.div 
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[32px] z-[70] p-8 pb-12 shadow-2xl"
-            >
-               <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-8" />
-               <h3 className="text-lg font-black uppercase tracking-widest text-gray-400 mb-6 italic">Select Category</h3>
-               <div className="grid grid-cols-2 gap-4">
-                 {categories.filter(c => c !== "All").map(cat => (
-                   <button
-                    key={cat}
-                    onClick={() => {
-                      document.getElementById(`category-${cat}`)?.scrollIntoView({ behavior: 'smooth' });
-                      setShowCategoryMenu(false);
-                    }}
-                    className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-[#F15A24] transition-all group"
-                   >
-                     <span className="text-sm font-bold text-gray-700 group-hover:text-[#F15A24]">{cat}</span>
-                     <span className="text-[10px] font-bold text-gray-400 italic">{menu.filter(i => i.category === cat).length}</span>
-                   </button>
-                 ))}
-               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Checkout Sheet (Refined) */}
+      {/* Checkout Sheet (Ultra-Premium) */}
       <AnimatePresence>
         {showCheckout && (
           <>
@@ -552,74 +641,74 @@ export default function PublicMenu({ params }: { params: { restaurantSlug: strin
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowCheckout(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60]"
+              className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[60]"
             />
             <motion.div 
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[40px] z-[70] p-8 max-h-[85vh] overflow-y-auto no-scrollbar shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 bg-[#020617] rounded-t-[50px] z-[70] p-10 max-h-[90vh] overflow-y-auto no-scrollbar border-t border-white/10 shadow-[0_-20px_100px_rgba(0,0,0,1)]"
             >
-              <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-8" />
+              <div className="w-16 h-1.5 bg-white/10 rounded-full mx-auto mb-10" />
               
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-12">
                 <div>
-                  <h3 className="text-2xl font-black text-gray-900 tracking-tight">Your Order</h3>
-                  <p className="text-xs text-gray-400 font-medium">Review your items before placing order</p>
+                  <h3 className="text-4xl font-black italic uppercase tracking-tighter text-white">YOUR <span className="text-[#00d4ff]">SELECTIONS</span></h3>
+                  <p className="text-[10px] text-white/30 font-black uppercase tracking-[0.3em] mt-2 italic">Premium Order Experience</p>
                 </div>
                 <button 
                   onClick={() => setShowCheckout(false)}
-                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400"
+                  className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors"
                 >
-                  <Plus className="w-5 h-5 rotate-45" />
+                  <Plus className="w-6 h-6 rotate-45" />
                 </button>
               </div>
 
-              <div className="space-y-6 mb-10">
+              <div className="space-y-6 mb-12">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-xl overflow-hidden bg-white border border-gray-200 shadow-sm">
-                        <img src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} alt={item.name} className="w-full h-full object-cover" />
+                  <div key={item.id} className="flex justify-between items-center bg-white/[0.02] p-5 rounded-[32px] border border-white/5 group">
+                    <div className="flex items-center gap-5">
+                      <div className="w-20 h-20 rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
+                        <img src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">{item.name}</p>
-                        <p className="text-[11px] font-bold text-[#F15A24] mt-0.5">₹{item.price}</p>
+                        <p className="font-black italic uppercase text-lg text-white group-hover:text-[#00d4ff] transition-colors">{item.name}</p>
+                        <p className="text-[11px] font-black text-[#00ff88] mt-1.5 italic tracking-widest">₹{item.price}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-                      <button onClick={() => removeFromCart(item.id)} className="w-6 h-6 flex items-center justify-center text-gray-400"><Minus className="w-3.5 h-3.5" /></button>
-                      <span className="font-black text-gray-900 text-sm w-4 text-center">{item.quantity}</span>
-                      <button onClick={() => addToCart(item)} className="w-6 h-6 flex items-center justify-center text-[#F15A24]"><Plus className="w-3.5 h-3.5" /></button>
+                    <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
+                      <button onClick={() => removeFromCart(item.id)} className="w-8 h-8 flex items-center justify-center text-white/20 hover:text-red-500 transition-colors"><Minus className="w-4 h-4" /></button>
+                      <span className="font-black text-white text-base italic w-4 text-center">{item.quantity}</span>
+                      <button onClick={() => addToCart(item)} className="w-8 h-8 flex items-center justify-center text-[#00d4ff] hover:scale-110 transition-transform"><Plus className="w-4 h-4" /></button>
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-3 pt-6 border-t border-gray-100 mb-8">
+              <div className="space-y-4 pt-8 border-t border-white/5 mb-12">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Item Total</span>
-                  <span className="text-gray-900 font-bold">₹{subtotal}</span>
+                  <span className="text-white/30 font-black uppercase tracking-[0.2em] text-[10px]">Subtotal</span>
+                  <span className="text-white font-black italic">₹{subtotal}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Taxes & Fees</span>
-                  <span className="text-gray-900 font-bold">₹{tax.toFixed(2)}</span>
+                  <span className="text-white/30 font-black uppercase tracking-[0.2em] text-[10px]">Taxes & Service (5%)</span>
+                  <span className="text-white font-black italic">₹{tax.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center pt-3 border-t border-gray-50">
-                  <span className="text-gray-900 font-black text-lg">Grand Total</span>
-                  <span className="text-[#16A34A] font-black text-2xl">₹{grandTotal.toFixed(2)}</span>
+                <div className="flex justify-between items-center pt-6 border-t border-white/10">
+                  <span className="text-white font-black italic text-xl uppercase tracking-tighter">Grand Total</span>
+                  <span className="text-[#00ff88] font-black italic text-4xl tracking-tighter shadow-[#00ff88]/10 drop-shadow-2xl">₹{grandTotal.toFixed(2)}</span>
                 </div>
               </div>
 
               <button 
                 onClick={handlePlaceOrder}
                 disabled={isPlacingOrder || cart.length === 0}
-                className="w-full h-16 rounded-2xl bg-[#16A34A] text-white text-lg font-black uppercase tracking-widest shadow-xl shadow-green-200 active:scale-95 transition-all flex items-center justify-center gap-3"
+                className="w-full h-20 rounded-[30px] bg-gradient-to-r from-[#00d4ff] to-[#00ff88] text-black text-2xl font-black italic uppercase tracking-tighter shadow-[0_20px_50px_rgba(0,212,255,0.3)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 group"
               >
-                {isPlacingOrder ? <Loader2 className="w-6 h-6 animate-spin" /> : (
+                {isPlacingOrder ? <Loader2 className="w-8 h-8 animate-spin" /> : (
                   <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    Place Order
+                    <CheckCircle2 className="w-7 h-7 group-hover:rotate-12 transition-transform" />
+                    CONFIRM ORDER
                   </>
                 )}
               </button>
