@@ -56,20 +56,33 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
+      // 1. Check Supabase session
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("restaurant_id")
-        .eq("id", user.id)
-        .single();
-        
-      if (profile?.restaurant_id) {
-        fetchRestaurantData(profile.restaurant_id);
-      } else {
-        setIsLoading(false);
+      
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("restaurant_id")
+          .eq("id", user.id)
+          .single();
+          
+        if (profile?.restaurant_id) {
+          fetchRestaurantData(profile.restaurant_id);
+          return;
+        }
       }
+
+      // 2. Fallback to localStorage (Staff Session)
+      const staffSessionStr = typeof window !== 'undefined' ? localStorage.getItem("staff_session") : null;
+      if (staffSessionStr) {
+        const staff = JSON.parse(staffSessionStr);
+        if (staff.restaurant_id) {
+          fetchRestaurantData(staff.restaurant_id);
+          return;
+        }
+      }
+
+      setIsLoading(false);
     } catch (err: any) {
       console.error(err);
       setIsLoading(false);
