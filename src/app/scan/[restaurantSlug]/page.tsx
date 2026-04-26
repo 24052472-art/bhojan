@@ -44,46 +44,52 @@ export default function GuestScanPage() {
   async function fetchInitialData() {
     setIsPageLoading(true);
     try {
-      // Find restaurant by slug
-      const { data: resData, error: resError } = await supabase
+      // 1. DYNAMIC FETCH: Try finding by ID first, then by Slug
+      let { data: resData, error: resError } = await supabase
         .from("restaurants")
         .select("*")
-        .eq("id", restaurantSlug) // Fallback to ID if slug isn't unique or defined
+        .eq("id", restaurantSlug)
         .single();
 
-      if (resError) {
-        // Try searching by a real 'slug' column if it exists
+      if (resError || !resData) {
         const { data: resDataBySlug } = await supabase
           .from("restaurants")
           .select("*")
           .eq("slug", restaurantSlug)
           .single();
         
-        if (resDataBySlug) setRestaurant(resDataBySlug);
-        else throw new Error("Restaurant not found");
+        if (resDataBySlug) {
+          resData = resDataBySlug;
+          setRestaurant(resDataBySlug);
+        } else {
+          throw new Error("Restaurant Profile not found.");
+        }
       } else {
         setRestaurant(resData);
       }
 
-      const resId = resData?.id || restaurantSlug;
+      const activeResId = resData?.id;
 
-      const { data: tableData } = await supabase
+      // 2. FAILSAFE TABLE FETCH: Ensure tables are fetched for the active ID
+      const { data: tableData, error: tableError } = await supabase
         .from("tables")
         .select("*")
-        .eq("restaurant_id", resId)
+        .eq("restaurant_id", activeResId)
         .order("table_number", { ascending: true });
+
+      if (tableError) console.error("Table Fetch Error:", tableError);
 
       const { data: menuData } = await supabase
         .from("menu_items")
         .select("*")
-        .eq("restaurant_id", resId)
+        .eq("restaurant_id", activeResId)
         .eq("is_available", true);
 
       setTables(tableData || []);
       setMenu(menuData || []);
       
       if (menuData) {
-        setCategories(["All", ...Array.from(new Set(menuData.map((m: any) => m.category)))]);
+        setCategories(["All", ...Array.from(new Set(menuData.map((m: any) => m.category || "General")))]);
       }
     } catch (err: any) {
       toast.error(err.message);
@@ -225,6 +231,18 @@ export default function GuestScanPage() {
                   </button>
                 ))}
              </div>
+
+             {tables.length === 0 && (
+                <div className="py-20 text-center space-y-4">
+                   <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto opacity-20">
+                      <MapPin className="w-8 h-8 text-white" />
+                   </div>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">No active stations found.</p>
+                   <Button onClick={() => fetchInitialData()} variant="outline" className="h-12 px-8 rounded-2xl border-white/10 text-xs font-black uppercase tracking-widest">
+                      Refresh Map
+                   </Button>
+                </div>
+             )}
           </div>
         )}
 
