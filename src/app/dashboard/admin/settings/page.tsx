@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
+import { auth as firebaseAuth } from "@/lib/firebase/config";
+import { onAuthStateChanged } from "firebase/auth";
 import { toast } from "react-hot-toast";
 import { 
   Building2, 
@@ -44,24 +46,30 @@ export default function SettingsPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    fetchSettings();
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+      if (user) {
+        fetchSettings(user.uid);
+      } else {
+        setIsLoading(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const fetchSettings = async () => {
+  const fetchSettings = async (uid: string) => {
     try {
-      // 1. Get current authenticated user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       // 2. Get their profile with restaurant ID
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("restaurant_id")
-        .eq("id", user.id)
+        .eq("id", uid)
         .single();
         
       if (profileError) throw profileError;
-      if (!profile?.restaurant_id) return;
+      if (!profile?.restaurant_id) {
+        toast.error("Restaurant ID not linked to your profile.");
+        return;
+      }
 
       const { data, error } = await supabase
         .from("restaurants")
