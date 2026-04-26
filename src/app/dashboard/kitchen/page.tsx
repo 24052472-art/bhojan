@@ -40,7 +40,7 @@ export default function KitchenDashboard() {
       const staff = JSON.parse(staffSessionStr);
       setProfile(staff);
       fetchInitialData(staff.restaurant_id);
-      subscribeToOrders(staff.restaurant_id);
+      setupRealtime(staff.restaurant_id);
     } else {
       const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
         if (user) getProfile(user.uid);
@@ -58,7 +58,7 @@ export default function KitchenDashboard() {
     setProfile(data);
     if (data?.restaurant_id) {
       fetchInitialData(data.restaurant_id);
-      subscribeToOrders(data.restaurant_id);
+      setupRealtime(data.restaurant_id);
     }
   }
 
@@ -102,43 +102,66 @@ export default function KitchenDashboard() {
     }
   }
 
-  function subscribeToOrders(restaurantId: string) {
-    if (channelRef.current) supabase.removeChannel(channelRef.current);
+  async function setupRealtime(restaurantId: string) {
+    if (!restaurantId) return;
+
+    if (channelRef.current && channelRef.current.topic === `realtime:bhojan-sync-${restaurantId}`) {
+      if (channelRef.current.state === 'joined') return;
+    }
+
+    if (channelRef.current) {
+      await supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
     
     const channelName = `bhojan-sync-${restaurantId}`;
-    const channel = supabase
-      .channel(channelName, {
-        config: {
-          broadcast: { self: true },
-        },
-      })
+    console.log(`KITCHEN: Initializing Sync Channel: ${channelName}`);
+    
+    const channel = supabase.channel(channelName, {
+      config: {
+        broadcast: { self: true }, // Removed ack for lower latency
+      },
+    });
+
+    channel
       .on('broadcast', { event: 'refresh_kitchen' }, (payload) => {
-        console.log("KITCHEN: BROADCAST RECEIVED", payload);
+        console.log("KITCHEN: Instant Refresh Triggered", payload);
         fetchLiveOrders(restaurantId);
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload: any) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload: any) => {
+        console.log("KITCHEN: New Order Detected via DB", payload);
+        fetchLiveOrders(restaurantId);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload: any) => {
+        console.log("KITCHEN: Order Update Detected via DB", payload);
         fetchLiveOrders(restaurantId);
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => {
         fetchLiveOrders(restaurantId);
       })
-      .subscribe((status) => {
-        console.log(`KITCHEN REALTIME (${channelName}):`, status);
+      .subscribe((status, err) => {
+        console.log(`KITCHEN REALTIME STATUS: ${status}`, err || '');
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setTimeout(() => setupRealtime(restaurantId), 3000);
+        }
       });
       
     channelRef.current = channel;
   }
 
   const updateStatus = async (orderId: string, newStatus: string, tableNum?: string) => {
+    console.log("KITCHEN: Action Initiated", { orderId, newStatus, tableNum });
     const { error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId);
-    if (error) toast.error("Transmission Error");
-    else {
+    if (error) {
+      console.error("KITCHEN: Transmission Failed", error);
+      toast.error("Transmission Error");
+    } else {
+      const broadcastType = newStatus === 'preparing' ? 'PREPARING' : 'COOKED';
       toast.success(newStatus === 'preparing' ? "Production Initiated" : "Extraction Ready");
       
       // Broadcast to Waiter
       if (channelRef.current) {
-        const broadcastType = newStatus === 'preparing' ? 'PREPARING' : 'COOKED';
-        console.log("KITCHEN: Sending Broadcast", { broadcastType, tableNum });
+        console.log("KITCHEN: Broadcasting Signal To Waiters...", { broadcastType, tableNum });
         channelRef.current.send({
           type: 'broadcast',
           event: 'refresh_waiter',

@@ -270,6 +270,11 @@ export default function AdminOrders() {
                              <p className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
                                 <Calendar className="w-3 h-3" /> {formatDate(order.created_at)}
                              </p>
+                             {order.settled_by && (
+                               <div className="px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[8px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
+                                  <UserCheck className="w-3 h-3" /> {order.settled_by}
+                               </div>
+                             )}
                              {!order.waiter_id && (
                                 <div className="px-3 py-1 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 text-[8px] font-black text-fuchsia-500 uppercase tracking-widest flex items-center gap-1.5">
                                    <Zap className="w-3 h-3" /> DIGITAL SCAN
