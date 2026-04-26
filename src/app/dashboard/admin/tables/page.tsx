@@ -58,11 +58,29 @@ export default function TableManagement() {
     }
   }
 
-  async function fetchTables(restaurantId: string) {
-    const { data } = await supabase.from("tables").select("*").eq("restaurant_id", restaurantId).order("table_number", { ascending: true });
+  const fetchTables = async (resId: string) => {
+    const { data } = await supabase
+      .from("tables")
+      .select("*, profiles!assigned_waiter_id(full_name)")
+      .eq("restaurant_id", resId)
+      .order("table_number", { ascending: true });
     setTables(data || []);
     setIsLoading(false);
-  }
+  };
+
+  const handleResetStatus = async (tableId: string) => {
+    const { error } = await supabase
+      .from("tables")
+      .update({ status: 'available' })
+      .eq("id", tableId);
+
+    if (error) {
+      toast.error("Failed to reset table.");
+    } else {
+      toast.success("Station Released!");
+      if (restaurant?.id) fetchTables(restaurant.id);
+    }
+  };
 
   async function fetchStaff(restaurantId: string) {
     const { data } = await supabase.from("user_profiles").select("*").eq("restaurant_id", restaurantId).eq("role", "waiter");
@@ -202,7 +220,16 @@ export default function TableManagement() {
                 </div>
 
                 <div className="mt-8 flex gap-3 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                  <Button variant="outline" className="flex-1 rounded-2xl border-white/5 bg-white/5 text-[10px] font-black uppercase tracking-widest h-12">Assign</Button>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleResetStatus(table.id);
+                    }}
+                    variant="outline" 
+                    className="flex-1 rounded-2xl border-red-500/20 bg-red-500/5 text-red-500 text-[10px] font-black uppercase tracking-widest h-12 hover:bg-red-500 hover:text-white"
+                  >
+                    Reset Status
+                  </Button>
                   <Button variant="outline" className="w-12 h-12 rounded-2xl border-white/5 bg-white/5 flex items-center justify-center"><Settings2 className="w-4 h-4" /></Button>
                 </div>
               </Card>
