@@ -49,7 +49,18 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const { data: profile } = await supabase.from("user_profiles").select("restaurant_id").single();
+      // 1. Get current authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // 2. Get their profile with restaurant ID
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("restaurant_id")
+        .eq("id", user.id)
+        .single();
+        
+      if (profileError) throw profileError;
       if (!profile?.restaurant_id) return;
 
       const { data, error } = await supabase

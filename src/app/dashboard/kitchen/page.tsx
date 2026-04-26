@@ -53,7 +53,7 @@ export default function KitchenDashboard() {
   }, [view]);
 
   async function getProfile(uid: string) {
-    const { data } = await supabase.from("user_profiles").select("*").eq("id", uid).single();
+    const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
     setProfile(data);
     if (data?.restaurant_id) {
       fetchInitialData(data.restaurant_id);
@@ -69,7 +69,7 @@ export default function KitchenDashboard() {
   }
 
   async function fetchStaff(resId: string) {
-    const { data } = await supabase.from("user_profiles").select("id, full_name").eq("restaurant_id", resId);
+    const { data } = await supabase.from("profiles").select("id, full_name").eq("restaurant_id", resId);
     if (data) {
       const map: Record<string, string> = {};
       data.forEach(s => map[s.id] = s.full_name);

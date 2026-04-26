@@ -52,7 +52,7 @@ export default function SuperAdminRestaurants() {
       await supabase.from("orders").delete().eq("restaurant_id", id);
       await supabase.from("menu_items").delete().eq("restaurant_id", id);
       await supabase.from("tables").delete().eq("restaurant_id", id);
-      await supabase.from("user_profiles").delete().eq("restaurant_id", id);
+      await supabase.from("profiles").delete().eq("restaurant_id", id);
       
       // Step 2: Delete the actual restaurant
       const { error } = await supabase.from("restaurants").delete().eq("id", id);
@@ -134,7 +134,7 @@ export default function SuperAdminRestaurants() {
                       <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Users</p>
                       <div className="flex items-center gap-2">
                          <Users className="w-4 h-4 text-slate-500" />
-                         <span className="text-xl font-black text-white">{res.user_profiles?.[0]?.count || 0}</span>
+                         <span className="text-xl font-black text-white">{res.profiles?.[0]?.count || 0}</span>
                       </div>
                    </div>
                    <div className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl space-y-1">

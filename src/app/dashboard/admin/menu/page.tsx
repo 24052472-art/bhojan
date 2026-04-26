@@ -47,7 +47,7 @@ export default function MenuManagement() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
-        const { data: profile } = await supabase.from("user_profiles").select("restaurant_id").eq("id", user.uid).single();
+        const { data: profile } = await supabase.from("profiles").select("restaurant_id").eq("id", user.uid).single();
         if (profile?.restaurant_id) {
           setRestaurantId(profile.restaurant_id);
           fetchItems(profile.restaurant_id);

@@ -33,7 +33,7 @@ export default function SuperAdminUsers() {
   async function fetchUsers() {
     setIsLoading(true);
     const { data } = await supabase
-      .from("user_profiles")
+      .from("profiles")
       .select(`
         *,
         restaurants (name)
@@ -46,7 +46,7 @@ export default function SuperAdminUsers() {
   const handleDelete = async (id: string) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.from("user_profiles").delete().eq("id", id);
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
       if (error) throw error;
       toast.success("User Access Revoked.");
       fetchUsers();

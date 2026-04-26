@@ -78,7 +78,7 @@ export default function WaiterDashboard() {
   }, []);
 
   async function getProfile(uid: string) {
-    const { data } = await supabase.from("user_profiles").select("*").eq("id", uid).single();
+    const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
     setProfile(data);
     if (data?.restaurant_id) {
       fetchInitialData(data.restaurant_id);

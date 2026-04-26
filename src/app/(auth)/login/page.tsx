@@ -43,7 +43,7 @@ export default function LoginPage() {
 
       // 1. Try direct ID lookup
       let { data: profile, error } = await supabase
-        .from("user_profiles")
+        .from("profiles")
         .select("*")
         .eq("id", user.uid)
         .single();
@@ -51,7 +51,7 @@ export default function LoginPage() {
       // 2. SELF-HEALING: If ID fails, search by EMAIL (The common link)
       if (error || !profile) {
         const { data: emailProfile, error: emailError } = await supabase
-          .from("user_profiles")
+          .from("profiles")
           .select("*")
           .eq("email", user.email)
           .single();
@@ -62,7 +62,7 @@ export default function LoginPage() {
         
         // 3. AUTO-LINK: Save the Firebase UID into Supabase for future fast-track login
         await supabase
-          .from("user_profiles")
+          .from("profiles")
           .update({ id: user.uid })
           .eq("email", user.email);
       }

@@ -46,7 +46,7 @@ export default function DashboardLayout({
         if (fbUser) {
           try {
             const { data } = await supabase
-              .from("user_profiles")
+              .from("profiles")
               .select("role")
               .eq("id", fbUser.uid)
               .single();

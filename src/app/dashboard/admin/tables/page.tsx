@@ -50,7 +50,7 @@ export default function TableManagement() {
   async function fetchInitialData(uid: string) {
     setIsLoading(true);
     // 1. Get Profile & Restaurant
-    const { data: profile } = await supabase.from("user_profiles").select("*, restaurants(*)").eq("id", uid).single();
+    const { data: profile } = await supabase.from("profiles").select("*, restaurants(*)").eq("id", uid).single();
     if (profile?.restaurants) {
       setRestaurant(profile.restaurants);
       fetchTables(profile.restaurants.id);
@@ -83,7 +83,7 @@ export default function TableManagement() {
   };
 
   async function fetchStaff(restaurantId: string) {
-    const { data } = await supabase.from("user_profiles").select("*").eq("restaurant_id", restaurantId).eq("role", "waiter");
+    const { data } = await supabase.from("profiles").select("*").eq("restaurant_id", restaurantId).eq("role", "waiter");
     setStaff(data || []);
   }
 

@@ -28,7 +28,7 @@ export default function TopBar() {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
         const { data } = await supabase
-          .from("user_profiles")
+          .from("profiles")
           .select("*")
           .eq("id", user.uid)
           .single();

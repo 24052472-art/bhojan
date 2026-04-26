@@ -21,7 +21,7 @@ export default function StaffLoginPage() {
       const formattedId = staffId.toLowerCase().startsWith("staff_") ? staffId.toLowerCase() : `staff_${staffId.toLowerCase()}`;
       
       const { data, error } = await supabase
-        .from("user_profiles")
+        .from("profiles")
         .select("*")
         .eq("id", formattedId)
         .single();

@@ -40,7 +40,7 @@ export default function SignupPage() {
 
       if (isSuperAdmin) {
         // Super Admin Bypass: No restaurant needed
-        await supabase.from("user_profiles").upsert({ 
+        await supabase.from("profiles").upsert({ 
           id: user.uid,
           role: 'super_admin',
           full_name: formData.fullName
@@ -58,7 +58,7 @@ export default function SignupPage() {
 
         if (resError) throw new Error(`Restaurant Creation Failed: ${resError.message}`);
 
-        await supabase.from("user_profiles").upsert({ 
+        await supabase.from("profiles").upsert({ 
           id: user.uid,
           restaurant_id: resData.id,
           role: 'owner',

@@ -35,7 +35,7 @@ export default function SuperAdminOverview() {
       
       // 1. Fetch Real Counts
       const { count: resCount } = await supabase.from("restaurants").select("*", { count: "exact", head: true });
-      const { count: userCount } = await supabase.from("user_profiles").select("*", { count: "exact", head: true });
+      const { count: userCount } = await supabase.from("profiles").select("*", { count: "exact", head: true });
       const { count: orderCount } = await supabase.from("orders").select("*", { count: "exact", head: true });
       
       // 2. Calculate Real Revenue

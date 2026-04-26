@@ -44,7 +44,7 @@ export default function StaffManagement() {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user) {
         const { data: profile } = await supabase
-          .from("user_profiles")
+          .from("profiles")
           .select("*")
           .eq("id", user.uid)
           .single();
@@ -61,7 +61,7 @@ export default function StaffManagement() {
   async function fetchStaff(restaurantId: string) {
     setIsLoading(true);
     const { data } = await supabase
-      .from("user_profiles")
+      .from("profiles")
       .select("*")
       .eq("restaurant_id", restaurantId)
       .neq("role", "owner")
@@ -85,7 +85,7 @@ export default function StaffManagement() {
     try {
       const staffId = `staff_${Math.random().toString(36).substr(2, 9)}`;
       
-      const { error } = await supabase.from("user_profiles").insert([{
+      const { error } = await supabase.from("profiles").insert([{
         id: staffId,
         full_name: newStaff.fullName,
         role: newStaff.role,
@@ -109,7 +109,7 @@ export default function StaffManagement() {
   const handleDeleteStaff = async (id: string) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.from("user_profiles").delete().eq("id", id);
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
       if (error) throw error;
       toast.success("Staff Identity Terminated.");
       if (adminProfile?.restaurant_id) fetchStaff(adminProfile.restaurant_id);

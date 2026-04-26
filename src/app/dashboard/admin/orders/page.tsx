@@ -55,7 +55,7 @@ export default function AdminOrders() {
   }, []);
 
   async function getProfile(uid: string) {
-    const { data } = await supabase.from("user_profiles").select("*").eq("id", uid).single();
+    const { data } = await supabase.from("profiles").select("*").eq("id", uid).single();
     setProfile(data);
     if (data?.restaurant_id) {
       fetchRestaurant(data.restaurant_id);
