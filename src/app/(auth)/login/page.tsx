@@ -36,6 +36,11 @@ export default function LoginPage() {
       const user = auth.currentUser;
       if (!user) throw new Error("No active session");
 
+      // MASTER OVERRIDE: If it's the owner's email, give them immediate access
+      if (user.email === 'aalokkushwaha285@gmail.com') {
+        return window.location.assign("/dashboard/super-admin");
+      }
+
       // 1. Try direct ID lookup
       let { data: profile, error } = await supabase
         .from("user_profiles")
