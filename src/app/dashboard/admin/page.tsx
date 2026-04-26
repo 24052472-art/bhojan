@@ -69,7 +69,7 @@ export default function AdminDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      const { data: profile } = await supabase.from("profiles").select("restaurant_id").eq("id", user.uid).single();
+      const { data: profile } = await supabase.from("profiles").select("restaurant_id").eq("id", user.id).single();
       if (!profile?.restaurant_id) return;
 
       const resId = profile.restaurant_id;
