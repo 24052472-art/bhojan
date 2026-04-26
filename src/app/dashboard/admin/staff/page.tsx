@@ -19,7 +19,8 @@ import {
   Share2,
   Copy,
   ExternalLink,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { auth as firebaseAuth } from "@/lib/firebase/config";
